@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Reports</title>
+  <link rel="stylesheet" href="reports.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script defer src="reports.js"></script>
+</head>
+
+<body>
+
+  <div class="whole-bg">
+
+    <div class="layout">
+
+      <!-- Sidebar Section -->
+      <aside class="sidebar">
+
+        <div class="profile-card">
+  <div class="profile-img-container">
+    <img id="profileImage" src="profile.jpg" class="profile-pic" alt="Profile">
+    <label for="uploadProfile" class="upload-icon">📸</label>
+    <input type="file" id="uploadProfile" accept="image/*" hidden>
+  </div>
+
+  <h3 id="studentName">Anaya Singh</h3>
+  <p><strong>ID:</strong> <span id="studentID">STU2025</span></p>
+  <p><strong>Course:</strong> <span id="studentCourse">B.Tech – AI & DS</span></p>
+</div>
+
+        <nav class="sidebar-nav">
+          <a href="dashboard.html"><span>🏠</span> Dashboard</a>
+          <a href="student_profile.html"><span>👤</span> Student Profile</a>
+          <a href="certificates.html"><span>🎓</span> Certificates & Events</a>
+          <a class="active" href="reports.html"><span>📊</span> Reports</a>
+          <a href="settings.html"><span>⚙️</span> Settings</a>
+        </nav>
+
+        <button class="logout-btn">🔴 Logout</button>
+
+      </aside>
+
+      <!-- Right Content Section -->
+      <main class="reports-section">
+
+        <!-- Academic Performance -->
+        <section class="report-box">
+          <h2>📘 Academic Performance</h2>
+
+          <div class="filter-row">
+            <label>Select Semester:</label>
+            <select id="semesterSelect">
+              <option>All Semesters</option>
+            </select>
+          </div>
+
+          <table id="gradesTable">
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th>Grade</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+
+          <canvas id="academicChart"></canvas>
+
+          <div class="grade-footer">
+            <strong>SGPA:</strong> <span id="sgpa">--</span>
+            &nbsp; | &nbsp;
+            <strong>CGPA:</strong> <span id="cgpa">--</span>
+          </div>
+        </section>
+
+        <!-- Skills Tracking -->
+        <section class="report-box">
+          <h2>💡 Skill Tracking</h2>
+
+          <ul id="skillsList" class="skill-list"></ul>
+          <canvas id="skillsRadarChart"></canvas>
+        </section>
+
+        <!-- Admin Feedback -->
+        <section class="report-box review-card">
+          <h2>📝 Admin Review</h2>
+
+          <div class="review-flex">
+            <img src="admin-photo.jpg" class="admin-photo">
+            <div>
+              <p id="feedback">Loading feedback...</p>
+              <small>Updated: <span id="timestamp">--</span></small>
+            </div>
+          </div>
+
+        </section>
+
+      </main>
+
+    </div>
+
+  </div>
+
+</body>
+</html>

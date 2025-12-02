@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login | Student/Admin Portal</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <!-- Left Side - Branding -->
+    <div class="left-side">
+      <div class="branding">
+        <h1></h1>
+        <p></p>
+      </div>
+    </div>
+
+    <!-- Right Side -->
+    <div class="right-side">
+      <div class="form-wrapper">
+        <!-- LOGIN FORM -->
+        <div class="login-form form-box active" id="loginBox">
+          <h2>Login</h2>
+          <div class="role-select">
+            <button class="role-btn active" id="studentBtn">Student</button>
+            <button class="role-btn" id="adminBtn">Admin</button>
+          </div>
+          <form id="loginForm">
+            <div class="input-group">
+              <input type="text" id="username" required />
+              <label for="username">Username</label>
+            </div>
+            <div class="input-group">
+              <input type="password" id="password" required />
+              <label for="password">Password</label>
+            </div>
+            <button type="submit" class="login-btn">Proceed</button>
+          </form>
+          <p class="extra-links">
+            <a href="#">Forgot Password?</a> |
+            <a href="#" id="signupLink">Sign Up</a>
+          </p>
+        </div>
+
+        <!-- SIGNUP FORM -->
+        <div class="signup-form form-box" id="signupBox">
+          <h2>Sign Up</h2>
+          <form id="signupForm">
+            <div class="input-group">
+              <input type="text" id="newUsername" required />
+              <label for="newUsername">Username</label>
+            </div>
+            <div class="input-group">
+              <input type="email" id="newEmail" required />
+              <label for="newEmail">Email</label>
+            </div>
+            <div class="input-group">
+              <input type="password" id="newPassword" required />
+              <label for="newPassword">Password</label>
+            </div>
+            <button type="submit" class="login-btn">Create Account</button>
+          </form>
+          <p class="extra-links">
+            Already have an account? <a href="#" id="loginLink">Login</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

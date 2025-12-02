@@ -1,0 +1,267 @@
+/* Global Layout */
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: #fff;
+  display: flex;
+}
+
+/* Sidebar (Matches Dashboard) */
+.sidebar {
+  width: 260px;
+  background: #ffffff;
+  padding: 25px 20px;
+  min-height: 100vh;
+  border-right: 4px solid #6b00a8;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.profile-section {
+  text-align: center;
+  margin-bottom: 1px;
+}
+
+.profile-photo {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 3px solid #6b00a8;
+  overflow: hidden;
+  margin: 0 auto 12px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: .3s ease;
+  background: #eee;
+}
+
+.profile-photo:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(123, 0, 255, 0.4);
+}
+
+.profile-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+
+.side-menu a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #333;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+.side-menu a.active,
+.side-menu a:hover {
+  background: #6b00a8;
+  color: #fff;
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 12px;
+  background: #d93644;
+  border: none;
+  color: #fff;
+  border-radius: 10px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.logout-btn:hover {
+  background: #b92734;
+}
+
+/* Main Content */
+.main-content {
+  flex-grow: 1;
+  padding: 30px;
+  background: #f8f4ff;
+}
+
+/* Page Header */
+.page-header {
+  background: linear-gradient(135deg, #7b2ff7, #9a4dff);
+  padding: 30px 25px;
+  border-radius: 18px;
+  margin-bottom: 22px;
+  box-shadow: 0 6px 16px rgba(120, 0, 200, 0.18);
+  text-align: center;
+}
+
+/* White text inside header */
+.page-header h1, 
+.page-header p {
+  color: #ffffff;
+}
+
+.page-header h1 {
+  font-size: 36px;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.page-header p {
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+
+/* Upload Section */
+.certificate-upload {
+  background: #fff;
+  margin-bottom: 20px;
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.certificate-upload form {
+  display: grid;
+  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.certificate-upload input,
+.certificate-upload select {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #bbb;
+}
+
+.certificate-upload button {
+  grid-column: span 3;
+  padding: 10px;
+  background: #6b00a8;
+  color: #fff;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+/* Achievements */
+.achievements {
+  background: #fff;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.filter-bar {
+  text-align: right;
+  margin-bottom: 10px;
+}
+
+.filter-bar select {
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid #bbb;
+}
+
+/* Cards */
+.achievement-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 15px;
+}
+
+.achievement-card {
+  background: #f0e6ff;
+  padding: 15px;
+  border-radius: 14px;
+  text-align: center;
+  position: relative;
+  transition: .25s;
+}
+
+.achievement-card:hover {
+  transform: translateY(-5px);
+}
+
+.achievement-card img,
+.pdf-preview {
+  width: 100%;
+  height: 130px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.pdf-preview {
+  background: #2c2c2c;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 45px;
+  color: #fff;
+}
+
+/* Status Badge */
+.badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  color: #fff;
+}
+.badge-approved { background: #28a745; }
+.badge-pending { background: #f1c40f; }
+
+/* Action Buttons */
+.card-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.action-btn {
+  background: #6b00a8;
+  padding: 5px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #fff;
+  cursor: pointer;
+}
+.action-btn.delete { background: #d93644; }
+
+/* Modal Viewer */
+.modal {
+  display: none;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.9);
+  top: 0;
+  left: 0;
+}
+
+.modal img, .modal iframe {
+  width: 80%;
+  max-height: 90%;
+  margin: 60px auto;
+  display: block;
+}
+
+.close {
+  position: absolute;
+  right: 40px;
+  top: 20px;
+  font-size: 50px;
+  color: #fff;
+  cursor: pointer;
+}

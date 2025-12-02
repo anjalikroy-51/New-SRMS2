@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Settings</title>
+  <link rel="stylesheet" href="settings.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Top Navigation (same style as dashboard) -->
+  <header class="top-bar">
+    <div class="brand">
+      <span class="brand-icon">⚙️</span>
+      <span class="brand-text">Student Skill Tracker</span>
+    </div>
+    <nav class="nav-links">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="student_profile.html">Student Profile</a>
+      <a href="certificates.html">Certificates</a>
+      <a href="reports.html">Reports</a>
+      <a href="settings.html" class="active">Settings</a>
+    </nav>
+  </header>
+
+  <main class="settings-page">
+    <h1 class="page-title">Settings</h1>
+
+    <section class="settings-grid">
+      <!-- PROFILE SETTINGS -->
+      <div class="settings-card profile-card">
+        <h2 class="card-title">Profile Settings</h2>
+        <div class="profile-content">
+          <label for="profilePhotoInput" class="profile-avatar-label">
+            <div class="profile-avatar">
+              <img
+                id="profilePhotoPreview"
+                src="https://via.placeholder.com/150x150.png?text=JD"
+                alt="Profile Photo"
+              />
+              <div class="avatar-overlay">
+                <span class="camera-icon">📷</span>
+                <span class="overlay-text">Change Photo</span>
+              </div>
+            </div>
+          </label>
+          <input type="file" id="profilePhotoInput" accept="image/*" />
+
+          <div class="profile-details">
+            <!-- These values can be filled from C++/DB -->
+            <p class="student-name">John Doe</p>
+            <p class="student-meta">Roll No: <span>2023BCA001</span></p>
+            <p class="student-meta">Course: <span>BCA</span></p>
+            <p class="student-meta">Semester: <span>III</span></p>
+            <!-- Optional: button to open full profile page -->
+            <a href="student_profile.html" class="secondary-btn">View Full Profile</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACCOUNT SECURITY / CHANGE PASSWORD -->
+      <div class="settings-card security-card">
+        <h2 class="card-title">Account Security</h2>
+        <form class="password-form" id="passwordForm">
+          <label>
+            <span>Current Password</span>
+            <input type="password" name="currentPassword" placeholder="Enter current password" required />
+          </label>
+          <label>
+            <span>New Password</span>
+            <input type="password" name="newPassword" placeholder="Enter new password" required />
+          </label>
+          <label>
+            <span>Confirm New Password</span>
+            <input type="password" name="confirmPassword" placeholder="Re-enter new password" required />
+          </label>
+          <button type="submit" class="primary-btn">Update Password</button>
+        </form>
+        <p class="hint-text">Tip: Use at least 8 characters with a mix of letters, numbers and symbols.</p>
+      </div>
+
+      <!-- CONTACT DETAILS -->
+      <div class="settings-card contact-card">
+        <h2 class="card-title">Contact Details</h2>
+        <form class="contact-form" id="contactForm">
+          <label>
+            <span>Primary Email</span>
+            <input type="email" name="primaryEmail" placeholder="john.doe@college.edu" />
+          </label>
+          <label>
+            <span>Alternate Email</span>
+            <input type="email" name="alternateEmail" placeholder="Optional alternate email" />
+          </label>
+          <label>
+            <span>Mobile Number</span>
+            <input type="tel" name="mobileNumber" placeholder="+91-XXXXXXXXXX" />
+          </label>
+          <label>
+            <span>Guardian Contact</span>
+            <input type="tel" name="guardianNumber" placeholder="Guardian mobile (optional)" />
+          </label>
+          <button type="submit" class="primary-btn small-btn">Save Contact Info</button>
+        </form>
+      </div>
+
+      <!-- NOTIFICATION & PRIVACY PREFERENCES -->
+      <div class="settings-card preferences-card">
+        <h2 class="card-title">Notification & Privacy</h2>
+        <div class="toggle-list">
+          <label class="toggle-row">
+            <div>
+              <p class="toggle-title">Exam & Result Alerts</p>
+              <p class="toggle-desc">Get notified when new exam schedules or results are published.</p>
+            </div>
+            <div class="toggle-switch">
+              <input type="checkbox" id="examAlerts" checked />
+              <span class="slider"></span>
+            </div>
+          </label>
+
+          <label class="toggle-row">
+            <div>
+              <p class="toggle-title">Assignment Reminders</p>
+              <p class="toggle-desc">Receive reminders for upcoming assignment deadlines.</p>
+            </div>
+            <div class="toggle-switch">
+              <input type="checkbox" id="assignmentReminders" checked />
+              <span class="slider"></span>
+            </div>
+          </label>
+
+          <label class="toggle-row">
+            <div>
+              <p class="toggle-title">Event & Workshop Updates</p>
+              <p class="toggle-desc">Stay updated about events and skill workshops.</p>
+            </div>
+            <div class="toggle-switch">
+              <input type="checkbox" id="eventUpdates" />
+              <span class="slider"></span>
+            </div>
+          </label>
+
+          <label class="toggle-row">
+            <div>
+              <p class="toggle-title">Show CGPA on Dashboard</p>
+              <p class="toggle-desc">Control whether your CGPA is visible on the main dashboard.</p>
+            </div>
+            <div class="toggle-switch">
+              <input type="checkbox" id="showCgpa" checked />
+              <span class="slider"></span>
+            </div>
+          </label>
+        </div>
+
+        <div class="language-row">
+          <label for="languageSelect">Interface Language</label>
+          <select id="languageSelect">
+            <option value="en" selected>English</option>
+            <option value="hi">Hindi</option>
+          </select>
+        </div>
+
+        <button class="primary-btn small-btn">Save Preferences</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Simple JS to preview profile photo (no backend, you can replace with C++ API) -->
+  <script>
+    const profileInput = document.getElementById('profilePhotoInput');
+    const profilePreview = document.getElementById('profilePhotoPreview');
+
+    profileInput.addEventListener('change', function () {
+      const file = this.files && this.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        profilePreview.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Placeholder form handlers – you can connect these to your C++ backend
+    document.getElementById('passwordForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      // TODO: Send password update request to backend
+      alert('Password update request sent (connect to backend).');
+    });
+
+    document.getElementById('contactForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      // TODO: Send contact info update to backend
+      alert('Contact info save request sent (connect to backend).');
+    });
+  </script>
+</body>
+</html>

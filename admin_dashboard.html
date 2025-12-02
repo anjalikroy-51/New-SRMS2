@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="admin_dashboard.css" />
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <!-- LEFT: ADMIN PROFILE + NAV -->
+  <aside class="sidebar">
+    <div class="admin-section">
+      <label for="profileUpload" class="profile-label">
+        <img src="admin.png" alt="Admin Profile" id="adminPic" class="admin-pic" />
+      </label>
+      <input type="file" id="profileUpload" accept="image/*" />
+      <p class="admin-name">Admin</p>
+      <p class="admin-role">System Administrator</p>
+    </div>
+
+    <nav class="nav-menu">
+      <a href="admin_dashboard.html" class="nav-item active">
+        <span class="nav-icon">📊</span>
+        <span class="nav-text">Dashboard</span>
+      </a>
+      <a href="manage_students.html" class="nav-item">
+        <span class="nav-icon">👨‍🎓</span>
+        <span class="nav-text">Manage Students</span>
+      </a>
+     <a href="admin_reports.html" class="nav-item">
+        <span class="nav-icon">📅</span>
+        <span class="nav-text">Reports</span>
+      </a>
+      
+
+    <button class="logout-btn">🔴 Logout</button>
+  </aside>
+
+  <!-- RIGHT: MAIN DASHBOARD -->
+  <main class="dashboard-content">
+    <div class="dashboard-header">
+      <h1 class="gradient-text">Admin Dashboard</h1>
+      <p class="subtitle">Overview of student records and pending approvals</p>
+    </div>
+
+    <div class="metrics-wrapper">
+      <!-- Total Students Card -->
+      <section class="metric-card">
+        <div class="metric-header">
+          <span class="metric-icon">👥</span>
+          <h2>Total Students</h2>
+        </div>
+        <div class="metric-body">
+          <p class="metric-number" id="totalStudents">0</p>
+          <p class="metric-caption">All registered student profiles</p>
+        </div>
+      </section>
+
+      <!-- Pending Approvals Card -->
+      <section class="metric-card clickable" id="pendingCard">
+        <div class="metric-header">
+          <span class="metric-icon">⏳</span>
+          <h2>Pending Approvals</h2>
+        </div>
+        <div class="metric-body">
+          <p class="metric-number" id="pendingCount">0</p>
+          <p class="metric-caption">Click to review students awaiting approval</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+</div>
+
+<!-- Pending Approvals Modal -->
+<div id="pendingModal" class="modal">
+  <div class="modal-content">
+    <h2 class="modal-title">
+      Pending Approvals (<span id="pendingTotal">0</span>)
+    </h2>
+    <p class="modal-subtitle">
+      These students are waiting for admin approval.
+    </p>
+
+    <ul id="pendingList" class="pending-list">
+      <!-- Filled by JavaScript -->
+    </ul>
+
+    <button class="closeModal">Close</button>
+  </div>
+</div>
+
+<script src="admin_dashboard.js"></script>
+</body>
+</html>

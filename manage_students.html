@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — Manage Students</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="manage_students.css">
+
+  <!-- Script -->
+  <script defer src="manage_students.js"></script>
+</head>
+<body>
+  <div class="admin-layout">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar">
+    <div class="admin-header">
+      <div class="admin-logo">⚙️</div>
+      <div class="admin-title">
+        <h2>Admin</h2>
+        <p>Panel</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="admin_dashboard.html"><span>🏠</span> Dashboard</a>
+      <a class="active" href="manage_students.html"><span>👥</span> Manage Students</a>
+      <a href="admin_reports.html"><span>📑</span> Reports</a>
+      
+    </nav>
+
+    <button class="logout-btn" onclick="window.location.href='login.html'">🔴 Logout</button>
+  </aside>
+
+
+  <!-- MAIN LAYOUT 
+  <div class="page-wrapper">-->
+    <main class="reprt-main">
+      <div class="page-header">
+        <div>
+          <h1>Manage Students</h1>
+          <p class="subtitle">
+            Add, edit and review student academic records, skills and admin feedback.  
+            These changes will later reflect in the student’s report page.
+          </p>
+        </div>
+
+        <div class="header-actions">
+          <button id="btnAddStudent" class="btn primary">➕ Add Student</button>
+          <button id="btnClearAll" class="btn danger-outline">🧹 Clear All</button>
+        </div>
+      </div>
+
+      <!-- FILTERS + SUMMARY -->
+      <section class="filters-card">
+        <div class="filters-row">
+          <div class="form-group">
+            <label for="searchInput">Search</label>
+            <input type="text" id="searchInput" placeholder="Search by name or ID...">
+          </div>
+
+          <div class="form-group">
+            <label for="courseFilter">Course</label>
+            <select id="courseFilter">
+              <option value="">All Courses</option>
+              <option value="BCA">BCA</option>
+              <option value="B.Tech CSE">B.Tech CSE</option>
+              <option value="B.Tech AI & DS">B.Tech AI & DS</option>
+              <option value="B.Sc IT">B.Sc IT</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="statusFilter">Status</label>
+            <select id="statusFilter">
+              <option value="">All Status</option>
+              <option value="Active">Active</option>
+              <option value="On Hold">On Hold</option>
+              <option value="Graduated">Graduated</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="summary-row">
+          <div class="summary-item">
+            <span class="summary-label">Total Students</span>
+            <span id="totalStudents" class="summary-value">0</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Average CGPA</span>
+            <span id="avgCgpa" class="summary-value">--</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Pending Verifications</span>
+            <span id="pendingVerifications" class="summary-value">0</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- STUDENT TABLE -->
+      <section class="card">
+        <div class="card-header">
+          <h2>Student List</h2>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Course</th>
+                <th>CGPA</th>
+                <th>Backlogs</th>
+                <th>Status</th>
+                <th>Last Updated</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="studentTableBody">
+              <!-- Dynamic rows via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- VERIFICATION SECTION (Certificates / Skills / Events) -->
+      <section class="card">
+        <div class="card-header">
+          <h2>Certificate / Skill / Event Verification</h2>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="data-table small">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Type</th>
+                <th>Title</th>
+                <th>Submitted On</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="verificationTableBody">
+              <!-- Dynamic verification data -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- REPORT TOOLS -->
+      <section class="card">
+        <div class="card-header">
+          <h2>Report & Backup Tools</h2>
+        </div>
+        <div class="tool-buttons">
+          <button id="btnGenerateReport" class="btn primary">📄 Generate Summary Report</button>
+          <button id="btnBackup" class="btn secondary">💾 Backup Data</button>
+          <button id="btnRestore" class="btn danger-outline">♻️ Restore Data</button>
+        </div>
+        <div id="reportOutput" class="report-output"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- EDIT / ADD STUDENT MODAL -->
+  <div id="studentModal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <header class="modal-header">
+        <h2 id="modalTitle">Edit Student</h2>
+        <button id="closeModal" class="icon-btn">✖</button>
+      </header>
+
+      <div class="modal-body">
+        <!-- Tabs -->
+        <div class="tabs">
+          <button class="tab-button active" data-tab="tab-personal">Personal</button>
+          <button class="tab-button" data-tab="tab-academic">Academic</button>
+          <button class="tab-button" data-tab="tab-skills">Skills</button>
+          <button class="tab-button" data-tab="tab-feedback">Admin Review</button>
+        </div>
+
+        <!-- TAB: PERSONAL -->
+        <div class="tab-panel active" id="tab-personal">
+          <div class="two-col">
+            <div class="form-group">
+              <label for="studentIdInput">Student ID</label>
+              <input type="text" id="studentIdInput">
+            </div>
+            <div class="form-group">
+              <label for="studentNameInput">Full Name</label>
+              <input type="text" id="studentNameInput">
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div class="form-group">
+              <label for="courseSelect">Course</label>
+              <select id="courseSelect">
+                <option value="BCA">BCA</option>
+                <option value="B.Tech CSE">B.Tech CSE</option>
+                <option value="B.Tech AI & DS">B.Tech AI & DS</option>
+                <option value="B.Sc IT">B.Sc IT</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="statusSelect">Status</label>
+              <select id="statusSelect">
+                <option value="Active">Active</option>
+                <option value="On Hold">On Hold</option>
+                <option value="Graduated">Graduated</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div class="form-group">
+              <label for="cgpaInput">CGPA</label>
+              <input type="number" step="0.01" min="0" max="10" id="cgpaInput">
+            </div>
+            <div class="form-group">
+              <label for="backlogsInput">Backlogs (Count)</label>
+              <input type="number" min="0" id="backlogsInput">
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: ACADEMIC -->
+        <div class="tab-panel" id="tab-academic">
+          <p class="tab-note">
+            Manage semester-wise performance. These details will be used to compute SGPA/CGPA and the 
+            academic chart on the student report page.
+          </p>
+
+          <div class="two-col">
+            <div class="form-group">
+              <label for="semesterNameInput">Semester</label>
+              <input type="text" id="semesterNameInput" placeholder="e.g., Semester 1">
+            </div>
+            <div class="form-group">
+              <label for="sgpaInput">SGPA</label>
+              <input type="number" step="0.01" min="0" max="10" id="sgpaInput">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="subjectsInput">Subjects & Grades</label>
+            <textarea id="subjectsInput" rows="3" placeholder="Format: Sub1:A, Sub2:B+, Sub3:A-"></textarea>
+          </div>
+
+          <button id="btnAddSemester" class="btn secondary small">➕ Add / Update Semester</button>
+
+          <div class="academic-list">
+            <h4>Semester Records</h4>
+            <ul id="semesterList" class="pill-list">
+              <!-- Filled via JS -->
+            </ul>
+          </div>
+        </div>
+
+        <!-- TAB: SKILLS -->
+        <div class="tab-panel" id="tab-skills">
+          <p class="tab-note">
+            Update skill-wise performance. This will reflect in the skill list and radar chart on the student report page.
+          </p>
+
+          <div class="two-col">
+            <div class="form-group">
+              <label for="skillNameInput">Skill Name</label>
+              <input type="text" id="skillNameInput" placeholder="e.g., Data Structures">
+            </div>
+            <div class="form-group">
+              <label for="skillLevelInput">Proficiency (%)</label>
+              <input type="number" id="skillLevelInput" min="0" max="100" placeholder="e.g., 75">
+            </div>
+          </div>
+
+          <button id="btnAddSkill" class="btn secondary small">➕ Add / Update Skill</button>
+
+          <div class="skills-list-panel">
+            <h4>Skills</h4>
+            <ul id="skillsListAdmin" class="pill-list">
+              <!-- Filled via JS -->
+            </ul>
+          </div>
+        </div>
+
+        <!-- TAB: ADMIN FEEDBACK -->
+        <div class="tab-panel" id="tab-feedback">
+          <p class="tab-note">
+            This feedback will appear under “📝 Admin Review” on the student report page along with the 
+            timestamp.
+          </p>
+
+          <div class="form-group">
+            <label for="feedbackInput">Feedback / Review</label>
+            <textarea id="feedbackInput" rows="4" placeholder="Write performance review, suggestions and remarks..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="feedbackDateInput">Updated On</label>
+            <input type="datetime-local" id="feedbackDateInput">
+          </div>
+        </div>
+      </div>
+
+      <footer class="modal-footer">
+        <button id="btnDeleteStudent" class="btn danger-outline left">🗑 Delete Student</button>
+        <div class="footer-right">
+          <button id="btnPreviewReport" class="btn secondary">👁 Preview Mapping</button>
+          <button id="btnSaveStudent" class="btn primary">💾 Save Changes</button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- SMALL TOAST MESSAGE -->
+  <div id="toast" class="toast hidden">Saved successfully</div>
+
+</body>
+</html>

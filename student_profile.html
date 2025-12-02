@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Profile</title>
+  <link rel="stylesheet" href="student_profile.css" />
+  <script src="student_profile.js" defer></script>
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- LEFT SIDEBAR (same style as dashboard) -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-photo-wrapper">
+        <img id="sidebarPhoto" src="https://via.placeholder.com/110" alt="Student Photo">
+        <input type="file" id="sidebarUpload" accept="image/*" hidden>
+        <button class="photo-icon" type="button">
+          <i class="fa-solid fa-camera"></i>
+        </button>
+      </div>
+      <div class="sidebar-info">
+        <p><strong>Name:</strong> <span id="sidebarName">Anaya Singh</span></p>
+        <p><strong>ID:</strong> <span id="sidebarId">STU2025</span></p>
+        <p><strong>Course:</strong> <span id="sidebarCourse">B.Tech – AI & Data Science</span></p>
+      </div>
+    </div>
+
+    <nav class="sidebar-menu">
+      <a href="dashboard.html"><i class="fa-solid fa-house"></i> Dashboard</a>
+      <a href="student_profile.html" class="active"><i class="fa-solid fa-user"></i> Student Profile</a>
+      <a href="certificates.html"><i class="fa-solid fa-certificate"></i> Certificates & Events</a>
+      <a href="reports.html"><i class="fa-solid fa-chart-line"></i> Reports</a>
+      <a href="settings.html"><i class="fa-solid fa-gear"></i> Settings</a>
+    </nav>
+
+    <button class="logout-btn">
+      <i class="fa-solid fa-right-from-bracket"></i> Logout
+    </button>
+  </aside>
+
+  <!-- MAIN PROFILE PAGE -->
+  <main class="profile-main">
+    <header class="profile-header">
+      <h1>Student Profile</h1>
+      <p>Fill in or update your personal and academic information.</p>
+    </header>
+
+    <form class="profile-form">
+
+      <!-- PERSONAL INFO -->
+      <section class="section-card">
+        <h2>Personal Information</h2>
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <input id="fullName" type="text" placeholder="Enter full name">
+          </div>
+          <div class="form-group">
+            <label for="studentId">Student ID</label>
+            <input id="studentId" type="text" placeholder="e.g. STU2025">
+          </div>
+          <div class="form-group">
+            <label for="dob">Date of Birth</label>
+            <input id="dob" type="date">
+          </div>
+          <div class="form-group">
+            <label for="gender">Gender</label>
+            <select id="gender">
+              <option value="">Select gender</option>
+              <option>Female</option>
+              <option>Male</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="nationality">Nationality</label>
+            <input id="nationality" type="text" placeholder="e.g. Indian">
+          </div>
+          <div class="form-group">
+            <label for="bloodGroup">Blood Group</label>
+            <input id="bloodGroup" type="text" placeholder="e.g. B+">
+          </div>
+          <div class="form-group">
+            <label for="category">Category</label>
+            <select id="category">
+              <option value="">Select category</option>
+              <option>General</option>
+              <option>OBC</option>
+              <option>SC</option>
+              <option>ST</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTACT INFO -->
+      <section class="section-card">
+        <h2>Contact Details</h2>
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input id="email" type="email" placeholder="name@example.com">
+          </div>
+          <div class="form-group">
+            <label for="phone">Mobile Number</label>
+            <input id="phone" type="tel" placeholder="+91">
+          </div>
+          <div class="form-group">
+            <label for="guardianName">Guardian Name</label>
+            <input id="guardianName" type="text" placeholder="Parent / Guardian name">
+          </div>
+          <div class="form-group">
+            <label for="guardianPhone">Guardian Contact</label>
+            <input id="guardianPhone" type="tel" placeholder="+91">
+          </div>
+          <div class="form-group full-width">
+            <label for="address">Address</label>
+            <textarea id="address" rows="2" placeholder="House no, street, area"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="city">City</label>
+            <input id="city" type="text">
+          </div>
+          <div class="form-group">
+            <label for="state">State</label>
+            <input id="state" type="text">
+          </div>
+          <div class="form-group">
+            <label for="pincode">Pincode</label>
+            <input id="pincode" type="text">
+          </div>
+        </div>
+      </section>
+
+      <!-- ACADEMIC INFO -->
+      <section class="section-card">
+        <h2>Academic Information</h2>
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="course">Course</label>
+            <input id="course" type="text" placeholder="e.g. BCA, B.Tech – AI & DS">
+          </div>
+          <div class="form-group">
+            <label for="department">Department</label>
+            <input id="department" type="text" placeholder="e.g. Computer Science">
+          </div>
+          <div class="form-group">
+            <label for="batch">Batch / Enrollment Year</label>
+            <input id="batch" type="text" placeholder="e.g. 2024–2027">
+          </div>
+          <div class="form-group">
+            <label for="semester">Current Semester</label>
+            <select id="semester">
+              <option value="">Select semester</option>
+              <option>1</option><option>2</option><option>3</option>
+              <option>4</option><option>5</option><option>6</option>
+              <option>7</option><option>8</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="section">Section / Division</label>
+            <input id="section" type="text" placeholder="e.g. A, B">
+          </div>
+          <div class="form-group">
+            <label for="rollNo">Roll Number</label>
+            <input id="rollNo" type="text">
+          </div>
+          <div class="form-group">
+            <label for="cgpa">Overall CGPA</label>
+            <input id="cgpa" type="number" step="0.01" placeholder="e.g. 8.5">
+          </div>
+          <div class="form-group">
+            <label for="sgpa">Last Semester SGPA</label>
+            <input id="sgpa" type="number" step="0.01" placeholder="e.g. 8.7">
+          </div>
+          <div class="form-group">
+            <label for="backlogs">Backlogs (if any)</label>
+            <input id="backlogs" type="text" placeholder="None / subject names">
+          </div>
+          <div class="form-group">
+            <label for="mentor">Academic Advisor / Mentor</label>
+            <input id="mentor" type="text">
+          </div>
+        </div>
+      </section>
+
+      <!-- SKILLS & DOCUMENTS -->
+      <section class="section-card">
+        <h2>Skills & Documents</h2>
+        <div class="grid-2">
+          <div class="form-group full-width">
+            <label for="skills">Technical Skills</label>
+            <textarea id="skills" rows="2"
+                      placeholder="e.g. C++, Java, Python, HTML/CSS, DBMS"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="languages">Languages Known</label>
+            <input id="languages" type="text" placeholder="e.g. English, Hindi">
+          </div>
+          <div class="form-group">
+            <label for="projects">Projects / Portfolio Links</label>
+            <input id="projects" type="text" placeholder="GitHub / project URLs">
+          </div>
+          <div class="form-group">
+            <label for="idCardUpload">College ID Card (file)</label>
+            <input id="idCardUpload" type="file" accept=".pdf,.jpg,.png">
+          </div>
+          <div class="form-group">
+            <label for="bonafideUpload">Bonafide Certificate</label>
+            <input id="bonafideUpload" type="file" accept=".pdf,.jpg,.png">
+          </div>
+          <div class="form-group">
+            <label for="feeReceiptUpload">Fee Receipt</label>
+            <input id="feeReceiptUpload" type="file" accept=".pdf,.jpg,.png">
+          </div>
+        </div>
+      </section>
+
+      <!-- EMERGENCY -->
+      <section class="section-card">
+        <h2>Emergency Information</h2>
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="emergencyContact">Emergency Contact Number</label>
+            <input id="emergencyContact" type="tel" placeholder="+91">
+          </div>
+          <div class="form-group">
+            <label for="emergencyRelation">Relation</label>
+            <input id="emergencyRelation" type="text" placeholder="e.g. Father, Mother">
+          </div>
+          <div class="form-group full-width">
+            <label for="medicalNotes">Medical Notes / Allergies</label>
+            <textarea id="medicalNotes" rows="2"
+              placeholder="Mention any allergies or important medical info"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- ACTION BUTTONS -->
+      <div class="form-actions">
+        <button type="reset" class="btn secondary">Reset</button>
+        <button type="submit" class="btn primary">Save Profile</button>
+      </div>
+
+    </form>
+  </main>
+
+</div>
+
+</body>
+</html>

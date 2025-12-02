@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css"/>
+  <script src="dashboard.js" defer></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<div class="dashboard-layout">
+
+  <!-- LEFT SIDEBAR PROFILE -->
+  <aside class="sidebar">
+    <section class="profile-card">
+      <div class="profile-photo">
+        <img id="studentPhoto" src="https://via.placeholder.com/110" alt="Student Photo">
+        <input type="file" id="uploadPhoto" accept="image/*" hidden>
+        <span class="edit-photo"><i class="fa-solid fa-camera"></i></span>
+      </div>
+
+      <div class="profile-info">
+        <p><strong>Name:</strong> <span>Anaya Singh</span></p>
+        <p><strong>ID:</strong> STU2025</p>
+        <p><strong>Course:</strong> B.Tech – AI & Data Science</p>
+      </div>
+    </section>
+
+    <!-- Menus -->
+    <nav class="menu">
+      <a class="active" href="dashboard.html"><i class="fa-solid fa-house"></i> Dashboard</a>
+      <a href="student_profile.html"><i class="fa-solid fa-user"></i> Student Profile</a>
+      <a href="certificates.html"><i class="fa-solid fa-certificate"></i> Certificates & Events</a>
+      <a href="reports.html"><i class="fa-solid fa-chart-line"></i> Reports</a>
+      <a href="settings.html"><i class="fa-solid fa-gear"></i> Settings</a>
+    </nav>
+
+    <button class="logout"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+  </aside>
+
+  <!-- CENTER SECTION -->
+  <main class="center-area">
+
+    <section class="welcome-box">
+      <h2>Welcome to</h2>
+      <h1>Student Record Management System</h1>
+      <i class="fa-solid fa-school"></i>
+    </section>
+
+    <!-- Class Schedule -->
+    <section class="card" id="schedule">
+  <h3><i class="fa-solid fa-table"></i> Weekly Class Schedule</h3>
+
+  <table class="schedule-table">
+    <thead>
+      <tr>
+        <th>Day</th>
+        <th>9–10 AM</th>
+        <th>10–11 AM</th>
+        <th>11–1 PM</th>
+        <th>2–4 PM</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Mon</td>
+        <td>AI</td>
+        <td>AI</td>
+        <td>Python</td>
+        <td>-</td>
+      </tr>
+      <tr>
+        <td>Tue</td>
+        <td>-</td>
+        <td>DBMS</td>
+        <td>DBMS</td>
+        <td>-</td>
+      </tr>
+      <tr>
+        <td>Wed</td>
+        <td>Java</td>
+        <td>Java</td>
+        <td>AI</td>
+        <td>-</td>
+      </tr>
+      <tr>
+        <td>Thu</td>
+        <td>-</td>
+        <td>Python</td>
+        <td>Python</td>
+        <td>DBMS</td>
+      </tr>
+      <tr>
+        <td>Fri</td>
+        <td>Project</td>
+        <td>-</td>
+        <td>Project</td>
+        <td>-</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <button class="download-btn">Download</button>
+</section>
+
+
+    <!-- Attendance -->
+    <section class="card" id="attendance">
+      <h3><i class="fa-solid fa-calendar-check"></i> Attendance</h3>
+      <p>Semester Attendance: <strong>82%</strong></p>
+      <p class="alert-text">⚠ Low attendance in DBMS</p>
+    </section>
+
+  </main>
+
+  <!-- RIGHT COLUMN -->
+  <aside class="right-area">
+
+    <!-- Academic Calendar -->
+    <section class="card" id="calendar">
+  <h3><i class="fa-solid fa-calendar-days"></i> Academic Calendar</h3>
+
+  <!-- Color Labels -->
+  <div class="calendar-legend">
+    <span class="legend exam">Exam</span>
+    <span class="legend holiday">Holiday</span>
+    <span class="legend deadline">Deadline</span>
+  </div>
+
+  <!-- Calendar Box -->
+  <div class="calendar-box">
+    <div class="calendar-header">
+      <button id="prevMonth">&#10094;</button>
+      <h4 id="calendarMonth"></h4>
+      <button id="nextMonth">&#10095;</button>
+    </div>
+    <table class="calendar-table">
+      <thead>
+        <tr>
+          <th>Su</th><th>Mo</th><th>Tu</th><th>We</th><th>Th</th><th>Fr</th><th>Sa</th>
+        </tr>
+      </thead>
+      <tbody id="calendarBody"></tbody>
+    </table>
+  </div>
+</section>
+
+
+    <!-- Upcoming Events -->
+    <section class="card" id="events">
+  <h3><i class="fa-solid fa-bullhorn"></i> Upcoming Events</h3>
+
+  <div class="event-legend">
+    <span class="legend workshop">Workshop</span>
+    <span class="legend hackathon">Hackathon</span>
+    <span class="legend seminar">Seminar</span>
+    <span class="legend fest">Tech Fest</span>
+  </div>
+
+  <!-- Scrollable events list -->
+  <div class="event-list" id="eventList"></div>
+</section>
+
+
+</body>
+</html>

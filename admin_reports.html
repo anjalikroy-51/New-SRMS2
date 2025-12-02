@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Student Performance Report</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin_reports.css">
+
+  <!-- Dummy Data -->
+  <script src="manage_students.js"></script>
+  <!-- Script -->
+  <script defer src="admin_reports.js"></script>
+</head>
+
+<body>
+
+  <div class="admin-layout">
+
+    <aside class="sidebar">
+      <div class="admin-header">
+        <div class="admin-logo">📊</div>
+        <div class="admin-title">
+          <h2>Admin</h2>
+          <p>Reports</p>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="admin_dashboard.html"><span>🏠</span> Dashboard</a>
+        <a href="manage_students.html"><span>👥</span> Manage Students</a>
+        <a class="active" href="admin_student_report.html"><span>📑</span> Reports</a>
+        
+      </nav>
+
+      <button class="logout-btn" onclick="window.location.href='login.html'">
+        🔴 Logout
+      </button>
+    </aside>
+
+    <main class="report-main">
+
+      <header class="report-header">
+        <div>
+          <h1>Student Performance Report</h1>
+          <p class="subtitle">View detailed academic & skill performance.</p>
+        </div>
+
+        <div class="student-select-row">
+          <label for="studentSelect">Select Student:</label>
+          <select id="studentSelect"></select>
+        </div>
+      </header>
+
+      <section class="student-summary-card">
+        <div class="student-basic">
+          <div class="avatar-circle">👤</div>
+          <div>
+            <h2 id="studentNameAdmin">--</h2>
+            <p><strong>ID:</strong> <span id="studentIDAdmin">--</span></p>
+            <p><strong>Course:</strong> <span id="studentCourseAdmin">--</span></p>
+          </div>
+        </div>
+
+        <div class="student-metrics">
+          <div class="metric-box">
+            <span class="metric-label">Current CGPA</span>
+            <span id="cgpaAdmin" class="metric-value">--</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-label">Backlogs</span>
+            <span id="backlogsAdmin" class="metric-value">--</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-label">Status</span>
+            <span id="statusAdmin" class="metric-pill">--</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Academic Performance (Without Charts) -->
+      <section class="report-box">
+        <h2>📘 Academic Performance</h2>
+
+        <div class="filter-row">
+          <label for="semesterSelectAdmin">Select Semester:</label>
+          <select id="semesterSelectAdmin">
+            <option value="all">All Semesters</option>
+          </select>
+        </div>
+
+        <table id="gradesTableAdmin" class="report-table">
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>Grade</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <div class="grade-footer">
+          <strong>SGPA:</strong> <span id="sgpaAdmin">--</span>
+          &nbsp; | &nbsp;
+          <strong>CGPA:</strong> <span id="cgpaFooterAdmin">--</span>
+        </div>
+      </section>
+
+      <!-- Skills Tracking (Without Radar Chart) -->
+      <section class="report-box">
+        <h2>💡 Skill Tracking</h2>
+        <ul id="skillsListAdminView" class="skill-list"></ul>
+      </section>
+
+      <!-- Certificates / Skills Status -->
+      <section class="report-box">
+        <h2>🎓 Certificates & Skills Status</h2>
+
+        <table id="certSkillTableAdmin" class="report-table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Title / Skill</th>
+              <th>Status</th>
+              <th>Admin Comments</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <!-- Admin Feedback -->
+      <section class="report-box review-card">
+        <h2>📝 Admin Review</h2>
+
+        <div class="review-flex">
+          <div class="admin-photo-circle">🧑‍💼</div>
+          <div>
+            <p id="feedbackAdmin">No review added yet.</p>
+            <small>Updated: <span id="timestampAdmin">--</span></small>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+</body>
+</html>

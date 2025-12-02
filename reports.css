@@ -1,0 +1,151 @@
+/* Whole Page Background */
+.whole-bg {
+  background: linear-gradient(135deg, #8e24aa, #6a1b9a);
+  min-height: 100vh;
+  padding: 20px;
+}
+
+/* Layout Flex */
+.layout {
+  display: flex;
+  gap: 20px;
+}
+
+/* Sidebar Panel */
+.sidebar {
+  width: 280px;
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  height: 95vh;
+  position: sticky;
+  top: 20px;
+}
+
+/* Profile Card */
+.profile-card {
+  padding: 20px;
+  text-align: center;
+  background: #f9e9ff;
+  border-radius: 18px;
+  box-shadow: 0px 4px 18px rgba(0,0,0,0.15);
+}
+
+.profile-pic {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+/* Sidebar Menu */
+.sidebar-nav a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  text-decoration: none;
+  background: #f0d6ff;
+  color: #4a0072;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  transition: 0.4s;
+}
+
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+  background: #6a1b9a;
+  color: #fff;
+}
+
+/* Logout */
+.logout-btn {
+  margin-top: auto;
+  padding: 12px;
+  border: none;
+  background: #ff4f4f;
+  color: white;
+  font-size: 16px;
+  border-radius: 12px;
+}
+
+/* Right Content */
+.reports-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.report-box {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 22px;
+  box-shadow: 0px 4px 20px rgba(0,0,0,0.2);
+}
+
+/* Academic Table Styling */
+table {
+  width: 100%;
+  margin: 12px 0;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 12px;
+  background: #f3e9ff;
+  border-radius: 10px;
+}
+
+th {
+  background: #6a1b9a;
+  color: #fff;
+}
+
+.skill-list li {
+  background: #e8d7ff;
+  padding: 10px;
+  border-radius: 12px;
+  margin: 8px 0;
+}
+
+.review-flex {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.admin-photo {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+}
+
+/* Profile Upload Styling */
+.profile-img-container {
+  position: relative;
+  display: inline-block;
+}
+
+.upload-icon {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background: #6a1b9a;
+  color: #fff;
+  padding: 6px 7px;
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+  border: 2px solid white;
+  transition: 0.3s;
+}
+
+.upload-icon:hover {
+  background: #9c27b0;
+}
