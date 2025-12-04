@@ -1,113 +1,98 @@
-// --------- DATA FETCH FROM BACKEND ---------
-// These endpoints should be implemented in your backend (C++ + Oracle)
-// Example responses:
-//  GET /api/students/count   -> { "total": 120 }
-//  GET /api/students/pending -> [ { "name": "Arya", "roll": "STU2025" }, ... ]
-
+// Load dashboard data using AJAX
 async function loadDashboardData() {
   try {
+    if (!requireAuth()) return;
+
     // Total students
-    const totalRes = await fetch("/api/students/count");
-    const totalData = await totalRes.json();
-    document.getElementById("totalStudents").innerText = totalData.total ?? 0;
+    const totalData = await apiCall('/students/count');
+    const totalEl = document.getElementById("totalStudents");
+    if (totalEl) {
+      totalEl.innerText = totalData.total ?? 0;
+    }
 
     // Pending students
-    const pendingRes = await fetch("/api/students/pending");
-    const pendingData = await pendingRes.json();
-    document.getElementById("pendingCount").innerText = pendingData.length ?? 0;
+    const pendingData = await apiCall('/students/pending');
+    const pendingEl = document.getElementById("pendingCount");
+    if (pendingEl) {
+      pendingEl.innerText = pendingData.length ?? 0;
+    }
   } catch (err) {
     console.error("Error loading dashboard data:", err);
   }
 }
 
-// --------- PENDING MODAL ---------
-// ---- Load numbers on dashboard cards ----
-async function loadDashboardData() {
-  try {
-    // total students
-    const totalRes = await fetch("/api/students/count");
-    const totalData = await totalRes.json();
-    document.getElementById("totalStudents").innerText = totalData.total ?? 0;
-
-    // pending approvals (array of students)
-    const pendingRes = await fetch("/api/students/pending");
-    const pendingData = await pendingRes.json();
-    document.getElementById("pendingCount").innerText = pendingData.length ?? 0;
-  } catch (err) {
-    console.error("Error loading dashboard data:", err);
-  }
-}
-
-// ---- Small popup for Pending Approvals ----
+// Pending Approvals Modal
 const pendingCard = document.getElementById("pendingCard");
 const modal = document.getElementById("pendingModal");
 const closeBtn = document.querySelector(".closeModal");
 const pendingList = document.getElementById("pendingList");
 const pendingTotal = document.getElementById("pendingTotal");
 
-// when admin clicks the Pending Approvals card
-pendingCard.addEventListener("click", async () => {
-  modal.style.display = "flex";       // show small window
-  await loadPendingList();           // fill list from backend
+// When admin clicks the Pending Approvals card
+pendingCard?.addEventListener("click", async () => {
+  if (modal) modal.style.display = "flex";
+  await loadPendingList();
 });
 
-// close button
-closeBtn.addEventListener("click", () => {
-  modal.style.display = "none";
+// Close button
+closeBtn?.addEventListener("click", () => {
+  if (modal) modal.style.display = "none";
 });
 
-// click outside the window closes it
+// Click outside the window closes it
 window.addEventListener("click", (e) => {
   if (e.target === modal) {
     modal.style.display = "none";
   }
 });
 
-// get list of pending students from backend
+// Get list of pending students from backend using AJAX
 async function loadPendingList() {
   try {
-    const res = await fetch("/api/students/pending");
-    const data = await res.json();
+    const data = await apiCall('/students/pending');
 
-    // update total in window title
-    pendingTotal.innerText = data.length ?? 0;
-
-    // clear existing list
-    pendingList.innerHTML = "";
-
-    if (!data.length) {
-      const li = document.createElement("li");
-      li.textContent = "No pending approvals.";
-      pendingList.appendChild(li);
-      return;
+    // Update total in window title
+    if (pendingTotal) {
+      pendingTotal.innerText = data.length ?? 0;
     }
 
-    // create numbered items: 1. Name (Roll)
-    data.forEach((student, index) => {
-      const li = document.createElement("li");
-      li.textContent = `${index + 1}. ${student.name} (${student.roll})`;
-      pendingList.appendChild(li);
-    });
+    // Clear existing list
+    if (pendingList) {
+      pendingList.innerHTML = "";
+
+      if (!data.length) {
+        const li = document.createElement("li");
+        li.textContent = "No pending approvals.";
+        pendingList.appendChild(li);
+        return;
+      }
+
+      // Create numbered items: 1. Name (Roll)
+      data.forEach((student, index) => {
+        const li = document.createElement("li");
+        li.textContent = `${index + 1}. ${student.name} (${student.roll || student.studentId})`;
+        pendingList.appendChild(li);
+      });
+    }
   } catch (err) {
     console.error("Error loading pending list:", err);
   }
 }
 
-// ---- initial load for the dashboard numbers ----
-loadDashboardData();
-
-
-// --------- PROFILE PICTURE UPLOAD PREVIEW ---------
+// Profile Picture Upload Preview
 const profileInput = document.getElementById("profileUpload");
 const adminPic = document.getElementById("adminPic");
 
-profileInput.addEventListener("change", () => {
+profileInput?.addEventListener("change", () => {
   const file = profileInput.files[0];
   if (file) {
     const url = URL.createObjectURL(file);
-    adminPic.src = url; // just preview on front-end
+    if (adminPic) adminPic.src = url;
   }
 });
 
-// --------- INIT ---------
-loadDashboardData();
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+  if (!requireAuth()) return;
+  loadDashboardData();
+});

@@ -1,0 +1,120 @@
+═══════════════════════════════════════════════════════════
+  HOW TO START YOUR APPLICATION IN COMMAND PROMPT (CMD)
+═══════════════════════════════════════════════════════════
+
+STEP 1: Open Command Prompt
+───────────────────────────────────────────────────────────
+Press: Windows Key + R
+Type: cmd
+Press: Enter
+
+OR
+
+Right-click Start button → Command Prompt
+
+
+STEP 2: Start MongoDB
+───────────────────────────────────────────────────────────
+Type this command and press Enter:
+
+    net start MongoDB
+
+If you see "The requested service has already been started", that's fine!
+If you see an error, MongoDB might not be installed or running as a service.
+
+
+STEP 3: Navigate to Your Project
+───────────────────────────────────────────────────────────
+Type this command (adjust path if needed):
+
+    cd "C:\Users\LENOVO\OneDrive\Desktop\NTCC\NewSRMS\backend"
+
+Press Enter
+
+
+STEP 4: Install Dependencies (First Time Only)
+───────────────────────────────────────────────────────────
+Type this command:
+
+    npm install
+
+Press Enter
+Wait 1-2 minutes for it to finish
+You should see "added X packages" when done
+
+
+STEP 5: Create .env File
+───────────────────────────────────────────────────────────
+You need to create a file named ".env" in the backend folder.
+
+Option A: Using Notepad
+1. Type: notepad .env
+2. Press Enter
+3. Copy and paste this:
+
+    PORT=3000
+    MONGODB_URI=mongodb://localhost:27017/srms
+    JWT_SECRET=your-secret-key-change-this-in-production
+    NODE_ENV=development
+
+4. Save (Ctrl+S) and close Notepad
+
+Option B: Using echo command
+Type these commands one by one:
+
+    echo PORT=3000 > .env
+    echo MONGODB_URI=mongodb://localhost:27017/srms >> .env
+    echo JWT_SECRET=your-secret-key-change-this-in-production >> .env
+    echo NODE_ENV=development >> .env
+
+
+STEP 6: Start the Backend Server
+───────────────────────────────────────────────────────────
+Type this command:
+
+    npm start
+
+Press Enter
+
+You should see:
+    Server is running on http://localhost:3000
+    MongoDB Connected: ...
+
+⚠️ IMPORTANT: Keep this CMD window open!
+Don't close it while using the application.
+
+
+STEP 7: Open in Browser
+───────────────────────────────────────────────────────────
+1. Open your web browser (Chrome, Firefox, Edge, etc.)
+2. Go to address bar
+3. Type: http://localhost:3000
+4. Press Enter
+
+You should see your Login page!
+
+
+═══════════════════════════════════════════════════════════
+  TROUBLESHOOTING
+═══════════════════════════════════════════════════════════
+
+Error: "npm is not recognized"
+→ Install Node.js from https://nodejs.org/
+→ Restart your computer
+→ Try again
+
+Error: "MongoDB service name is invalid"
+→ MongoDB is not installed or not running as service
+→ Install MongoDB or use MongoDB Atlas (cloud)
+
+Error: "Port 3000 already in use"
+→ Another program is using port 3000
+→ Close other programs or change PORT in .env to 3001
+
+Error: "Cannot connect to MongoDB"
+→ Make sure MongoDB is running (net start MongoDB)
+→ Check MONGODB_URI in .env file
+
+═══════════════════════════════════════════════════════════
+
+

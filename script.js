@@ -33,32 +33,56 @@ loginLink.addEventListener("click", (e) => {
   loginBox.classList.add("active");
 });
 
-// Login form handling
-document.getElementById("loginForm").addEventListener("submit", (e) => {
+// Login form handling with AJAX
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const username = document.getElementById("username").value;
   const password = document.getElementById("password").value;
+  const userRole = role === "Student" ? "student" : "admin";
 
-  if (role === "Student") {
-    window.location.href = "dashboard.html"; // Redirect to Student Dashboard
-  } else if (role === "Admin") {
-    window.location.href = "admin_dashboard.html"; // Redirect to Admin Dashboard
+  try {
+    const data = await apiCall('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password, role: userRole })
+    });
+
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    
+    if (role === "Student") {
+      window.location.href = "dashboard.html";
+    } else if (role === "Admin") {
+      window.location.href = "admin_dashboard.html";
+    }
+  } catch (error) {
+    alert(error.message || 'Login failed. Please check your credentials.');
   }
-
-// alert(`Logging in as ${role}:\nUsername: ${username}\nPassword: ${password}`);//
 });
 
-// Signup form handling
-document.getElementById("signupForm").addEventListener("submit", (e) => {
+// Signup form handling with AJAX
+document.getElementById("signupForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const newUser = document.getElementById("newUsername").value;
   const newEmail = document.getElementById("newEmail").value;
   const newPass = document.getElementById("newPassword").value;
+  const userRole = role === "Student" ? "student" : "admin";
 
-if (role === "Student") {
-    window.location.href = "dashboard.html"; // Redirect after signup
-  } else if (role === "Admin") {
-    window.location.href = "admin_dashboard.html"; // Redirect after signup
+  try {
+    const data = await apiCall('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ username: newUser, email: newEmail, password: newPass, role: userRole })
+    });
+
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    alert('Account created successfully!');
+    
+    if (role === "Student") {
+      window.location.href = "dashboard.html";
+    } else if (role === "Admin") {
+      window.location.href = "admin_dashboard.html";
+    }
+  } catch (error) {
+    alert(error.message || 'Registration failed. Please try again.');
   }
- // alert(`Account created:\nUsername: ${newUser}\nEmail: ${newEmail}\nPassword: ${newPass}`);//
 });
