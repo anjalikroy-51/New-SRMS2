@@ -1,20 +1,21 @@
 const mongoose = require('mongoose');
 
-const attendanceSchema = new mongoose.Schema({
+const skillSchema = new mongoose.Schema({
   studentId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'StudentProfile',
     required: true
   },
-  semesterAttendance: {
+  skillName: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  proficiency: {
     type: Number,
     required: true,
-    min: 0,
-    max: 100
-  },
-  lowAttendanceSubjects: {
-    type: [String],
-    default: []
+    min: 1,
+    max: 10
   },
   updatedAt: {
     type: Date,
@@ -25,6 +26,7 @@ const attendanceSchema = new mongoose.Schema({
 });
 
 // Index for faster queries
-attendanceSchema.index({ studentId: 1 });
+skillSchema.index({ studentId: 1 });
 
-module.exports = mongoose.model('Attendance', attendanceSchema);
+module.exports = mongoose.model('Skill', skillSchema);
+

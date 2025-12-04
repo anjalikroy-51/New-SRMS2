@@ -1,52 +1,52 @@
 const mongoose = require('mongoose');
 
-const certificateSchema = new mongoose.Schema({
+const achievementSchema = new mongoose.Schema({
   studentId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'StudentProfile',
     required: true
   },
-  certificateName: {
+  title: {
     type: String,
     required: true,
     trim: true
   },
-  issuer: {
+  description: {
     type: String,
     trim: true
   },
-  issueDate: {
-    type: Date,
-    required: true
+  position: {
+    type: String,
+    trim: true
   },
   category: {
     type: String,
     trim: true
+  },
+  achievementDate: {
+    type: Date,
+    required: true
+  },
+  fileUrl: {
+    type: String,
+    default: ''
   },
   status: {
     type: String,
     enum: ['Approved', 'Pending', 'Rejected'],
     default: 'Pending'
   },
-  fileUrl: {
-    type: String,
-    default: ''
-  },
   uploadedAt: {
     type: Date,
     default: Date.now
-  },
-  verifiedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
   }
 }, {
   timestamps: true
 });
 
 // Index for faster queries
-certificateSchema.index({ studentId: 1 });
-certificateSchema.index({ status: 1 });
+achievementSchema.index({ studentId: 1 });
+achievementSchema.index({ status: 1 });
 
-module.exports = mongoose.model('Certificate', certificateSchema);
+module.exports = mongoose.model('Achievement', achievementSchema);
 

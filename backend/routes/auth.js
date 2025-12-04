@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const Student = require('../models/Student');
+const StudentProfile = require('../models/StudentProfile');
+const ClassSchedule = require('../models/ClassSchedule');
 const { JWT_SECRET } = require('../middleware/auth');
 
 const router = express.Router();
@@ -41,16 +43,48 @@ router.post('/register', [
 
     await user.save();
 
-    // If student, create student record
+    // If student, create student record, profile, and default class schedule
     if (user.role === 'student') {
+      const studentId = `STU${Date.now()}`;
+      
+      // Create old Student model for backward compatibility
       const student = new Student({
         user: user._id,
-        studentId: `STU${Date.now()}`,
+        studentId: studentId,
         name: username,
         course: 'Not Assigned',
         status: 'Active'
       });
       await student.save();
+      
+      // Create new StudentProfile
+      const studentProfile = new StudentProfile({
+        userId: user._id,
+        studentId: studentId,
+        fullName: username,
+        course: 'Not Assigned',
+        email: email,
+        studentStatus: 'Active',
+        approvalStatus: 'Pending'
+      });
+      await studentProfile.save();
+
+      // Create a simple default weekly schedule so the dashboard is not empty
+      const defaultSchedule = [
+        { day: 'Mon', timeSlots: { '9-10 AM': 'AI', '10-11 AM': 'AI', '11-1 PM': 'Python', '2-4 PM': '-' } },
+        { day: 'Tue', timeSlots: { '9-10 AM': '-', '10-11 AM': 'DBMS', '11-1 PM': 'DBMS', '2-4 PM': '-' } },
+        { day: 'Wed', timeSlots: { '9-10 AM': 'Java', '10-11 AM': 'Java', '11-1 PM': 'AI', '2-4 PM': '-' } },
+        { day: 'Thu', timeSlots: { '9-10 AM': '-', '10-11 AM': 'Python', '11-1 PM': 'Python', '2-4 PM': 'DBMS' } },
+        { day: 'Fri', timeSlots: { '9-10 AM': 'Project', '10-11 AM': '-', '11-1 PM': 'Project', '2-4 PM': '-' } }
+      ];
+
+      for (const s of defaultSchedule) {
+        await ClassSchedule.create({
+          studentId: studentProfile._id,
+          day: s.day,
+          timeSlots: s.timeSlots
+        });
+      }
     }
 
     // Generate token

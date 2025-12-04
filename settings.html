@@ -165,34 +165,8 @@
     </section>
   </main>
 
-  <!-- Simple JS to preview profile photo (no backend, you can replace with C++ API) -->
-  <script>
-    const profileInput = document.getElementById('profilePhotoInput');
-    const profilePreview = document.getElementById('profilePhotoPreview');
-
-    profileInput.addEventListener('change', function () {
-      const file = this.files && this.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        profilePreview.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    });
-
-    // Placeholder form handlers – you can connect these to your C++ backend
-    document.getElementById('passwordForm').addEventListener('submit', function (e) {
-      e.preventDefault();
-      // TODO: Send password update request to backend
-      alert('Password update request sent (connect to backend).');
-    });
-
-    document.getElementById('contactForm').addEventListener('submit', function (e) {
-      e.preventDefault();
-      // TODO: Send contact info update to backend
-      alert('Contact info save request sent (connect to backend).');
-    });
-  </script>
+  <!-- Backend Integration -->
+  <script src="api.js"></script>
+  <script src="settings.js"></script>
 </body>
 </html>

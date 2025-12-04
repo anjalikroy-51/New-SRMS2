@@ -1,6 +1,6 @@
 const express = require('express');
 const Attendance = require('../models/Attendance');
-const Student = require('../models/Student');
+const StudentProfile = require('../models/StudentProfile');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
@@ -8,25 +8,24 @@ const router = express.Router();
 // Get attendance for current student
 router.get('/me', authenticateToken, async (req, res) => {
   try {
-    const student = await Student.findOne({ user: req.user._id });
-    if (!student) {
-      return res.status(404).json({ error: 'Student not found' });
+    const studentProfile = await StudentProfile.findOne({ userId: req.user._id });
+    if (!studentProfile) {
+      return res.status(404).json({ error: 'Student profile not found' });
     }
 
-    const { start_date, end_date } = req.query;
-    let query = { student: student._id };
+    const attendance = await Attendance.findOne({ studentId: studentProfile._id });
 
-    if (start_date) {
-      query.date = { ...query.date, $gte: new Date(start_date) };
+    if (!attendance) {
+      return res.json({
+        semesterAttendance: 0,
+        lowAttendanceSubjects: []
+      });
     }
 
-    if (end_date) {
-      query.date = { ...query.date, $lte: new Date(end_date) };
-    }
-
-    const attendance = await Attendance.find(query).sort({ date: -1 });
-
-    res.json(attendance);
+    res.json({
+      semesterAttendance: attendance.semesterAttendance,
+      lowAttendanceSubjects: attendance.lowAttendanceSubjects || []
+    });
   } catch (error) {
     console.error('Error fetching attendance:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -37,70 +36,74 @@ router.get('/me', authenticateToken, async (req, res) => {
 router.get('/student/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const student = await Student.findOne({
+    const studentProfile = await StudentProfile.findOne({
       $or: [{ _id: id }, { studentId: id }]
     });
 
-    if (!student) {
+    if (!studentProfile) {
       return res.status(404).json({ error: 'Student not found' });
     }
 
-    const attendance = await Attendance.find({ student: student._id }).sort({ date: -1 });
+    const attendance = await Attendance.findOne({ studentId: studentProfile._id });
 
-    res.json(attendance);
+    if (!attendance) {
+      return res.json({
+        semesterAttendance: 0,
+        lowAttendanceSubjects: []
+      });
+    }
+
+    res.json({
+      semesterAttendance: attendance.semesterAttendance,
+      lowAttendanceSubjects: attendance.lowAttendanceSubjects || []
+    });
   } catch (error) {
     console.error('Error fetching attendance:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Add attendance record (admin only)
+// Update attendance (admin only)
 router.post('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const { student_id, date, status, subject } = req.body;
+    const { studentId, semesterAttendance, lowAttendanceSubjects } = req.body;
 
-    if (!student_id || !date || !status) {
-      return res.status(400).json({ error: 'Student ID, date, and status are required' });
+    if (!studentId || semesterAttendance === undefined) {
+      return res.status(400).json({ error: 'Student ID and semester attendance are required' });
     }
 
-    const student = await Student.findOne({
-      $or: [{ _id: student_id }, { studentId: student_id }]
+    const studentProfile = await StudentProfile.findOne({
+      $or: [{ _id: studentId }, { studentId: studentId }]
     });
 
-    if (!student) {
+    if (!studentProfile) {
       return res.status(404).json({ error: 'Student not found' });
     }
 
-    const attendance = new Attendance({
-      student: student._id,
-      date: new Date(date),
-      status,
-      subject: subject || ''
-    });
+    let attendance = await Attendance.findOne({ studentId: studentProfile._id });
 
-    await attendance.save();
-
-    // Update attendance percentage
-    const totalRecords = await Attendance.countDocuments({ student: student._id });
-    const presentRecords = await Attendance.countDocuments({
-      student: student._id,
-      status: 'Present'
-    });
-    const percentage = totalRecords > 0 ? (presentRecords / totalRecords) * 100 : 0;
-
-    student.attendancePercentage = percentage;
-    await student.save();
+    if (attendance) {
+      attendance.semesterAttendance = semesterAttendance;
+      attendance.lowAttendanceSubjects = lowAttendanceSubjects || [];
+      attendance.updatedAt = new Date();
+      await attendance.save();
+    } else {
+      attendance = new Attendance({
+        studentId: studentProfile._id,
+        semesterAttendance,
+        lowAttendanceSubjects: lowAttendanceSubjects || []
+      });
+      await attendance.save();
+    }
 
     res.status(201).json({
-      message: 'Attendance recorded',
-      attendance,
-      attendancePercentage: percentage
+      message: 'Attendance updated',
+      attendance
     });
   } catch (error) {
-    console.error('Error recording attendance:', error);
+    console.error('Error updating attendance:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 module.exports = router;
-

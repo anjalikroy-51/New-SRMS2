@@ -1,14 +1,37 @@
 const express = require('express');
-const Schedule = require('../models/Schedule');
+const ClassSchedule = require('../models/ClassSchedule');
+const StudentProfile = require('../models/StudentProfile');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Get class schedule
+// Get class schedule for current student
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const schedule = await Schedule.find().sort({ day: 1, timeSlot: 1 });
-    res.json(schedule);
+    const studentProfile = await StudentProfile.findOne({ userId: req.user._id });
+    
+    if (!studentProfile) {
+      return res.status(404).json({ error: 'Student profile not found' });
+    }
+
+    const schedules = await ClassSchedule.find({ studentId: studentProfile._id })
+      .sort({ day: 1 });
+
+    // Format for frontend
+    const formattedSchedule = [];
+    schedules.forEach(schedule => {
+      if (schedule.timeSlots) {
+        schedule.timeSlots.forEach((subject, timeSlot) => {
+          formattedSchedule.push({
+            day: schedule.day,
+            timeSlot: timeSlot,
+            subject: subject
+          });
+        });
+      }
+    });
+
+    res.json(formattedSchedule);
   } catch (error) {
     console.error('Error fetching schedule:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -18,20 +41,36 @@ router.get('/', authenticateToken, async (req, res) => {
 // Create/Update schedule (admin only)
 router.post('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const { day, timeSlot, subject } = req.body;
+    const { studentId, day, timeSlots } = req.body;
 
-    if (!day || !timeSlot || !subject) {
-      return res.status(400).json({ error: 'Day, timeSlot, and subject are required' });
+    if (!studentId || !day || !timeSlots) {
+      return res.status(400).json({ error: 'StudentId, day, and timeSlots are required' });
+    }
+
+    const studentProfile = await StudentProfile.findOne({
+      $or: [{ _id: studentId }, { studentId: studentId }]
+    });
+
+    if (!studentProfile) {
+      return res.status(404).json({ error: 'Student not found' });
     }
 
     // Check if schedule already exists
-    let schedule = await Schedule.findOne({ day, timeSlot });
+    let schedule = await ClassSchedule.findOne({ 
+      studentId: studentProfile._id, 
+      day 
+    });
 
     if (schedule) {
-      schedule.subject = subject;
+      // Update timeSlots
+      schedule.timeSlots = new Map(Object.entries(timeSlots));
       await schedule.save();
     } else {
-      schedule = new Schedule({ day, timeSlot, subject });
+      schedule = new ClassSchedule({
+        studentId: studentProfile._id,
+        day,
+        timeSlots: new Map(Object.entries(timeSlots))
+      });
       await schedule.save();
     }
 
@@ -49,7 +88,7 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
 router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const schedule = await Schedule.findByIdAndDelete(id);
+    const schedule = await ClassSchedule.findByIdAndDelete(id);
 
     if (!schedule) {
       return res.status(404).json({ error: 'Schedule not found' });

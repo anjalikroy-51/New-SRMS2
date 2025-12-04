@@ -26,6 +26,49 @@ const userSchema = new mongoose.Schema({
     required: true,
     default: 'student'
   },
+  contactInfo: {
+    primaryEmail: {
+      type: String,
+      trim: true,
+      lowercase: true
+    },
+    alternateEmail: {
+      type: String,
+      trim: true,
+      lowercase: true
+    },
+    mobileNumber: {
+      type: String,
+      trim: true
+    },
+    guardianNumber: {
+      type: String,
+      trim: true
+    }
+  },
+  preferences: {
+    examAlerts: {
+      type: Boolean,
+      default: true
+    },
+    assignmentReminders: {
+      type: Boolean,
+      default: true
+    },
+    eventUpdates: {
+      type: Boolean,
+      default: false
+    },
+    showCgpa: {
+      type: Boolean,
+      default: true
+    },
+    language: {
+      type: String,
+      enum: ['en', 'hi'],
+      default: 'en'
+    }
+  },
   createdAt: {
     type: Date,
     default: Date.now

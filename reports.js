@@ -1,34 +1,93 @@
 document.addEventListener("DOMContentLoaded", () => {
-  loadSavedProfileImage(); // <-- Added here
+  if (!requireAuth()) return;
+  
   loadStudentProfile();
   loadReportsData();
 
-  document.getElementById("semesterSelect").addEventListener("change", loadReportsData);
+  const semesterSelect = document.getElementById("semesterSelect");
+  if (semesterSelect) {
+    semesterSelect.addEventListener("change", loadReportsData);
+  }
+
+  // Logout button
+  const logoutBtn = document.querySelector(".logout-btn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = 'Login.html';
+    });
+  }
 });
 
 
 // 🔹 1️⃣ Load Student Profile Data
-// === Profile Image Upload Function ===
-document.getElementById("uploadProfile").addEventListener("change", function(event) {
-  const file = event.target.files[0];
+async function loadStudentProfile() {
+  try {
+    const student = await apiCall('/students/profile/me');
+    
+    // Update profile info
+    const nameEl = document.getElementById("studentName");
+    const idEl = document.getElementById("studentID");
+    const courseEl = document.getElementById("studentCourse");
+    
+    if (nameEl) nameEl.textContent = student.name || "N/A";
+    if (idEl) idEl.textContent = student.studentId || "N/A";
+    if (courseEl) courseEl.textContent = student.course || "N/A";
+    
+    // Update profile image
+    if (student.photo) {
+      const profileImg = document.getElementById("profileImage");
+      if (profileImg) {
+        profileImg.src = `http://localhost:3000${student.photo}`;
+      }
+    }
+  } catch (error) {
+    console.error('Error loading student profile:', error);
+  }
+}
 
-  if (file) {
+// === Profile Image Upload Function ===
+const uploadProfileEl = document.getElementById("uploadProfile");
+if (uploadProfileEl) {
+  uploadProfileEl.addEventListener("change", async function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Show preview immediately
     const reader = new FileReader();
     reader.onload = function(e) {
       const imgData = e.target.result;
-      localStorage.setItem("studentProfileImage", imgData);
-      document.getElementById("profileImage").src = imgData;
+      const profileImg = document.getElementById("profileImage");
+      if (profileImg) {
+        profileImg.src = imgData;
+      }
     };
     reader.readAsDataURL(file);
-  }
-});
+
+    // Upload to backend
+    try {
+      const formData = new FormData();
+      formData.append('photo', file);
+      
+      const result = await apiUpload('/settings/photo', formData, { method: 'POST' });
+      
+      if (result.photo) {
+        const profileImg = document.getElementById("profileImage");
+        if (profileImg) {
+          profileImg.src = `http://localhost:3000${result.photo}`;
+        }
+      }
+    } catch (error) {
+      console.error('Error uploading profile photo:', error);
+      alert('Failed to upload profile photo. Please try again.');
+    }
+  });
+}
 
 // === Load Saved Profile Image ===
 function loadSavedProfileImage() {
-  const savedImg = localStorage.getItem("studentProfileImage");
-  if (savedImg) {
-    document.getElementById("profileImage").src = savedImg;
-  }
+  // This is now handled by loadStudentProfile
 }
 
 
@@ -38,21 +97,50 @@ async function loadReportsData() {
   const semester = document.getElementById("semesterSelect").value;
 
   try {
-    const response = await fetch(
-      `http://localhost:5000/api/student/report?semester=${semester}`
-    );
-    const data = await response.json();
+    const data = await apiCall(`/reports/student?semester=${semester || 'all'}`);
 
-    updateGrades(data.academic);
+    updateGrades(data.academic || []);
     updateSGPA_CGPA(data.sgpa, data.cgpa);
-    updateSkills(data.skills);
-    updateFeedback(data.feedback);
+    updateSkills(data.skills || []);
+    updateFeedback(data.feedback || {});
 
-    loadAcademicChart(data.academic);
-    loadSkillsRadarChart(data.skills);
+    if (data.academic && data.academic.length > 0) {
+      loadAcademicChart(data.academic);
+    }
+    if (data.skills && data.skills.length > 0) {
+      loadSkillsRadarChart(data.skills);
+    }
+
+    // Update semester dropdown
+    updateSemesterDropdown(data.semesters || []);
 
   } catch (err) {
     console.error("Report loading failed:", err);
+    // Show error message
+    const tableBody = document.querySelector("#gradesTable tbody");
+    if (tableBody) {
+      tableBody.innerHTML = `<tr><td colspan="2">Error loading report data</td></tr>`;
+    }
+  }
+}
+
+// Update semester dropdown
+function updateSemesterDropdown(semesters) {
+  const select = document.getElementById("semesterSelect");
+  if (!select) return;
+  
+  const currentValue = select.value;
+  select.innerHTML = '<option value="all">All Semesters</option>';
+  
+  semesters.forEach(sem => {
+    const option = document.createElement("option");
+    option.value = sem.name;
+    option.textContent = sem.name;
+    select.appendChild(option);
+  });
+  
+  if (currentValue) {
+    select.value = currentValue;
   }
 }
 

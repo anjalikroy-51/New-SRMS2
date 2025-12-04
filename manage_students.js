@@ -1,42 +1,11 @@
-// Simple in-memory store (later replace with API calls)
-let students = [
-  {
-    id: "STU2025",
-    name: "Anaya Singh",
-    course: "B.Tech AI & DS",
-    cgpa: 8.7,
-    backlogs: 0,
-    status: "Active",
-    lastUpdated: "2025-11-20 10:15",
-    semesters: [
-      { name: "Semester 1", sgpa: 8.4, subjects: "Maths:A, Programming:A-, Physics:B+" },
-      { name: "Semester 2", sgpa: 9.0, subjects: "Data Structures:A, DBMS:A-, OS:B+" }
-    ],
-    skills: [
-      { name: "Python", level: 85 },
-      { name: "Data Structures", level: 78 },
-      { name: "Machine Learning", level: 70 }
-    ],
-    feedback: "Excellent academic consistency. Can participate in more hackathons.",
-    feedbackUpdatedAt: "2025-11-22T15:30"
-  }
-];
+// Admin Manage Students - Fully integrated with backend API
 
-let verifications = [
-  {
-    id: 1,
-    studentId: "STU2025",
-    studentName: "Anaya Singh",
-    type: "Certificate",
-    title: "Smart India Hackathon 2025",
-    submittedOn: "2025-11-10",
-    status: "Pending"
-  }
-];
+// ======== State ========
+let students = [];       // Loaded from /api/students
+let verifications = [];  // Loaded from /api/certificates
+let editingIndex = null; // index in students[] currently being edited
 
-let editingIndex = null; // index of student being edited
-
-// DOM references
+// ======== DOM references ========
 const studentTableBody = document.getElementById("studentTableBody");
 const verificationTableBody = document.getElementById("verificationTableBody");
 const totalStudentsEl = document.getElementById("totalStudents");
@@ -87,8 +56,9 @@ const reportOutput = document.getElementById("reportOutput");
 
 const toast = document.getElementById("toast");
 
-// Helpers
+// ======== Helpers ========
 function showToast(message) {
+  if (!toast) return;
   toast.textContent = message;
   toast.classList.remove("hidden");
   toast.classList.add("show");
@@ -108,29 +78,87 @@ function formatDateTime(dtString) {
   }
 }
 
-// Rendering
+// Map backend Student document to UI-friendly object
+function mapStudentFromApi(s) {
+  return {
+    _id: s._id,
+    id: s.studentId,
+    name: s.name,
+    course: s.course,
+    cgpa: s.cgpa,
+    backlogs: s.backlogs,
+    status: s.status,
+    lastUpdated: s.lastUpdated ? formatDateTime(s.lastUpdated) : "--",
+    semesters: s.semesters || [],
+    skills: s.skills || [],
+    feedback: s.feedback?.text || "",
+    feedbackUpdatedAt: s.feedback?.updatedAt || ""
+  };
+}
+
+// ======== Data loading ========
+async function loadStudentsFromBackend() {
+  try {
+    const params = new URLSearchParams();
+    const search = (searchInput.value || "").trim();
+    const course = courseFilter.value;
+    const status = statusFilter.value;
+
+    if (search) params.append("search", search);
+    if (course) params.append("course", course);
+    if (status) params.append("status", status);
+
+    const endpoint = params.toString()
+      ? `/students?${params.toString()}`
+      : "/students";
+
+    const apiStudents = await apiCall(endpoint);
+    students = apiStudents.map(mapStudentFromApi);
+    renderStudents();
+  } catch (error) {
+    console.error("Error loading students:", error);
+    students = [];
+    renderStudents();
+  }
+}
+
+async function loadVerificationsFromBackend() {
+  try {
+    const certs = await apiCall("/certificates");
+    verifications = (certs || []).map(c => {
+      const studentLabel =
+        c.student?.name && c.student?.studentId
+          ? `${c.student.name} (${c.student.studentId})`
+          : c.studentId || "Unknown";
+
+      return {
+        _id: c._id,
+        studentLabel,
+        type: "Certificate",
+        title: c.certificateName || c.title || "N/A",
+        submittedOn: c.uploadedAt || c.issueDate,
+        status: c.status || "Pending"
+      };
+    });
+    renderVerifications();
+  } catch (error) {
+    console.error("Error loading verifications:", error);
+    verifications = [];
+    renderVerifications();
+  }
+}
+
+// ======== Rendering ========
 function renderStudents() {
-  const search = (searchInput.value || "").toLowerCase();
-  const course = courseFilter.value;
-  const status = statusFilter.value;
+  if (!studentTableBody) return;
 
   studentTableBody.innerHTML = "";
 
-  let filtered = students.filter(s => {
-    const matchesSearch =
-      s.name.toLowerCase().includes(search) ||
-      s.id.toLowerCase().includes(search);
-
-    const matchesCourse = !course || s.course === course;
-    const matchesStatus = !status || s.status === status;
-
-    return matchesSearch && matchesCourse && matchesStatus;
-  });
-
-  filtered.forEach((s, index) => {
+  students.forEach((s, index) => {
     const tr = document.createElement("tr");
 
-    const cgpaText = s.cgpa != null ? s.cgpa.toFixed(2) : "--";
+    const cgpaText =
+      s.cgpa != null && !Number.isNaN(s.cgpa) ? Number(s.cgpa).toFixed(2) : "--";
     const statusClass =
       s.status === "Active"
         ? "active"
@@ -155,17 +183,26 @@ function renderStudents() {
   });
 
   // Summary
-  totalStudentsEl.textContent = students.length;
+  if (totalStudentsEl) {
+    totalStudentsEl.textContent = students.length;
+  }
 
-  if (students.length > 0) {
-    const sumCgpa = students.reduce((sum, s) => sum + (s.cgpa || 0), 0);
-    avgCgpaEl.textContent = (sumCgpa / students.length).toFixed(2);
-  } else {
-    avgCgpaEl.textContent = "--";
+  if (avgCgpaEl) {
+    if (students.length > 0) {
+      const sumCgpa = students.reduce(
+        (sum, s) => sum + (s.cgpa || 0),
+        0
+      );
+      avgCgpaEl.textContent = (sumCgpa / students.length).toFixed(2);
+    } else {
+      avgCgpaEl.textContent = "--";
+    }
   }
 }
 
 function renderVerifications() {
+  if (!verificationTableBody) return;
+
   verificationTableBody.innerHTML = "";
   let pendingCount = 0;
 
@@ -174,10 +211,10 @@ function renderVerifications() {
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${v.studentName} (${v.studentId})</td>
+      <td>${v.studentLabel || "--"}</td>
       <td>${v.type}</td>
       <td>${v.title}</td>
-      <td>${v.submittedOn}</td>
+      <td>${v.submittedOn ? formatDateTime(v.submittedOn) : "--"}</td>
       <td>${v.status}</td>
       <td>
         <button class="btn small secondary" data-verif="approve" data-index="${index}">✅ Approve</button>
@@ -187,10 +224,12 @@ function renderVerifications() {
     verificationTableBody.appendChild(tr);
   });
 
-  pendingVerificationsEl.textContent = pendingCount;
+  if (pendingVerificationsEl) {
+    pendingVerificationsEl.textContent = pendingCount;
+  }
 }
 
-// Modal logic
+// ======== Modal logic ========
 function openModal(mode, index = null) {
   editingIndex = index;
   resetModalFields();
@@ -233,9 +272,15 @@ function resetModalFields() {
   feedbackDateInput.value = "";
 
   // Default tab
-  document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
-  document.querySelectorAll(".tab-panel").forEach(panel => panel.classList.remove("active"));
-  document.querySelector(".tab-button[data-tab='tab-personal']").classList.add("active");
+  document
+    .querySelectorAll(".tab-button")
+    .forEach(btn => btn.classList.remove("active"));
+  document
+    .querySelectorAll(".tab-panel")
+    .forEach(panel => panel.classList.remove("active"));
+  document
+    .querySelector(".tab-button[data-tab='tab-personal']")
+    .classList.add("active");
   document.getElementById("tab-personal").classList.add("active");
 }
 
@@ -249,49 +294,56 @@ function populateModalWithStudent(student) {
 
   // Semesters
   semesterList.innerHTML = "";
-  (student.semesters || []).forEach((sem, idx) => {
+  (student.semesters || []).forEach(sem => {
     const li = document.createElement("li");
+    li.dataset.subjects = sem.subjects || "";
     li.innerHTML = `
       <span>${sem.name} – SGPA: ${sem.sgpa}</span>
-      <button data-sem-index="${idx}">🗑</button>
+      <button>🗑</button>
     `;
     semesterList.appendChild(li);
+
+    li.querySelector("button").addEventListener("click", () => {
+      li.remove();
+    });
   });
 
   // Skills
   skillsListAdmin.innerHTML = "";
-  (student.skills || []).forEach((sk, idx) => {
+  (student.skills || []).forEach(sk => {
     const li = document.createElement("li");
     li.innerHTML = `
       <span>${sk.name}: ${sk.level}%</span>
-      <button data-skill-index="${idx}">🗑</button>
+      <button>🗑</button>
     `;
     skillsListAdmin.appendChild(li);
+
+    li.querySelector("button").addEventListener("click", () => {
+      li.remove();
+    });
   });
 
   // Feedback
   feedbackInput.value = student.feedback || "";
   if (student.feedbackUpdatedAt) {
-    feedbackDateInput.value = student.feedbackUpdatedAt;
+    // ISO string; leave as-is for now
+    feedbackDateInput.value = "";
   }
 }
 
-// Save student data from modal
-function saveStudent() {
+// Build payload from modal
+function buildStudentPayload() {
   const now = new Date();
 
-  const newStudent = {
-    id: studentIdInput.value.trim(),
+  const payload = {
+    studentId: studentIdInput.value.trim(),
     name: studentNameInput.value.trim(),
     course: courseSelect.value,
     status: statusSelect.value,
     cgpa: cgpaInput.value ? parseFloat(cgpaInput.value) : null,
     backlogs: backlogsInput.value ? parseInt(backlogsInput.value) : 0,
-    lastUpdated: now.toLocaleString(),
     semesters: [],
-    skills: [],
-    feedback: feedbackInput.value.trim(),
-    feedbackUpdatedAt: feedbackDateInput.value || now.toISOString()
+    skills: []
   };
 
   // Semesters from current list DOM
@@ -300,8 +352,8 @@ function saveStudent() {
     const [namePart, sgpaPart] = text.split("– SGPA:");
     const name = namePart.trim();
     const sgpa = parseFloat((sgpaPart || "").trim());
-    const subjects = ""; // For simplicity we are not storing subjects here; but you can extend using dataset if needed
-    newStudent.semesters.push({ name, sgpa, subjects });
+    const subjects = li.dataset.subjects || "";
+    payload.semesters.push({ name, sgpa, subjects });
   });
 
   // Skills from DOM
@@ -309,179 +361,295 @@ function saveStudent() {
     const text = li.firstElementChild.textContent; // "Python: 85%"
     const [name, levelPart] = text.split(":");
     const level = parseInt((levelPart || "").replace("%", "").trim());
-    newStudent.skills.push({ name: name.trim(), level });
+    payload.skills.push({ name: name.trim(), level });
   });
 
-  if (!newStudent.id || !newStudent.name) {
-    alert("Student ID and Name are required.");
-    return;
-  }
+  payload.lastUpdated = now.toISOString();
 
-  if (editingIndex == null) {
-    students.push(newStudent);
-  } else {
-    students[editingIndex] = newStudent;
-  }
-
-  renderStudents();
-  showToast("Student saved (will reflect in reports after backend sync)");
-  closeModal();
+  return payload;
 }
 
-// Events
+// Save student data from modal (create or update)
+async function saveStudent() {
+  try {
+    const payload = buildStudentPayload();
 
-// Tab switching
-document.querySelectorAll(".tab-button").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const tabId = btn.dataset.tab;
-    document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active"));
-    document.querySelectorAll(".tab-panel").forEach(panel => panel.classList.remove("active"));
-    btn.classList.add("active");
-    document.getElementById(tabId).classList.add("active");
-  });
-});
+    if (!payload.studentId || !payload.name) {
+      alert("Student ID and Name are required.");
+      return;
+    }
 
-// Add / Update Semester (simple append)
-btnAddSemester.addEventListener("click", () => {
-  const name = semesterNameInput.value.trim();
-  const sgpa = sgpaInput.value.trim();
+    let savedStudent;
 
-  if (!name || !sgpa) {
-    alert("Semester name and SGPA are required.");
-    return;
-  }
+    if (editingIndex == null) {
+      // Create new student
+      savedStudent = await apiCall("/students", {
+        method: "POST",
+        body: JSON.stringify({
+          studentId: payload.studentId,
+          name: payload.name,
+          course: payload.course,
+          status: payload.status,
+          cgpa: payload.cgpa,
+          backlogs: payload.backlogs
+        })
+      });
 
-  const li = document.createElement("li");
-  li.innerHTML = `
-    <span>${name} – SGPA: ${sgpa}</span>
-    <button>🗑</button>
-  `;
-  semesterList.appendChild(li);
+      const id = savedStudent.student?._id || savedStudent._id;
 
-  semesterNameInput.value = "";
-  sgpaInput.value = "";
-  subjectsInput.value = "";
+      // Add semesters
+      for (const sem of payload.semesters) {
+        await apiCall(`/students/${id}/semesters`, {
+          method: "POST",
+          body: JSON.stringify({
+            name: sem.name,
+            sgpa: sem.sgpa,
+            subjects: sem.subjects
+          })
+        });
+      }
 
-  // Delete listener
-  li.querySelector("button").addEventListener("click", () => {
-    li.remove();
-  });
-});
+      // Add skills
+      for (const sk of payload.skills) {
+        await apiCall(`/students/${id}/skills`, {
+          method: "POST",
+          body: JSON.stringify({
+            name: sk.name,
+            level: sk.level
+          })
+        });
+      }
 
-// Add / Update Skill
-btnAddSkill.addEventListener("click", () => {
-  const name = skillNameInput.value.trim();
-  const level = skillLevelInput.value.trim();
+      // Feedback
+      const feedbackText = feedbackInput.value.trim();
+      if (feedbackText) {
+        await apiCall(`/students/${id}/feedback`, {
+          method: "PUT",
+          body: JSON.stringify({ feedback_text: feedbackText })
+        });
+      }
+    } else {
+      // Update existing student
+      const existing = students[editingIndex];
+      const id = existing._id;
 
-  if (!name || !level) {
-    alert("Skill name and proficiency are required.");
-    return;
-  }
+      // Update main student fields (including semesters & skills)
+      await apiCall(`/students/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          studentId: payload.studentId,
+          name: payload.name,
+          course: payload.course,
+          status: payload.status,
+          cgpa: payload.cgpa,
+          backlogs: payload.backlogs,
+          semesters: payload.semesters,
+          skills: payload.skills
+        })
+      });
 
-  const li = document.createElement("li");
-  li.innerHTML = `
-    <span>${name}: ${level}%</span>
-    <button>🗑</button>
-  `;
-  skillsListAdmin.appendChild(li);
+      // Update feedback
+      const feedbackText = feedbackInput.value.trim();
+      await apiCall(`/students/${id}/feedback`, {
+        method: "PUT",
+        body: JSON.stringify({ feedback_text: feedbackText })
+      });
+    }
 
-  skillNameInput.value = "";
-  skillLevelInput.value = "";
-
-  li.querySelector("button").addEventListener("click", () => {
-    li.remove();
-  });
-});
-
-// Edit button in table
-studentTableBody.addEventListener("click", e => {
-  const btn = e.target.closest("button");
-  if (!btn) return;
-  const index = btn.dataset.index;
-  if (btn.dataset.action === "edit") {
-    openModal("edit", index);
-  }
-});
-
-// Verification buttons
-verificationTableBody.addEventListener("click", e => {
-  const btn = e.target.closest("button");
-  if (!btn) return;
-
-  const index = parseInt(btn.dataset.index, 10);
-  const action = btn.dataset.verif;
-
-  if (action === "approve") {
-    verifications[index].status = "Approved";
-    showToast("Verification approved");
-  } else if (action === "reject") {
-    verifications[index].status = "Rejected";
-    showToast("Verification rejected");
-  }
-
-  renderVerifications();
-});
-
-// Save Student
-btnSaveStudent.addEventListener("click", saveStudent);
-
-// Delete Student
-btnDeleteStudent.addEventListener("click", () => {
-  if (editingIndex == null) return;
-  if (!confirm("Are you sure you want to delete this student?")) return;
-  students.splice(editingIndex, 1);
-  renderStudents();
-  closeModal();
-  showToast("Student deleted");
-});
-
-// Preview report mapping (just a message for now)
-btnPreviewReport.addEventListener("click", () => {
-  alert(
-    "This student's data (personal, academic, skills, feedback) is structured to map directly to the Student Reports page.\n\nLater, the backend will use this same structure for reports.js."
-  );
-});
-
-// Close modal
-closeModalBtn.addEventListener("click", closeModal);
-studentModal.addEventListener("click", e => {
-  if (e.target === studentModal.querySelector(".modal-backdrop")) {
+    await loadStudentsFromBackend();
+    showToast("Student saved successfully");
     closeModal();
+  } catch (error) {
+    console.error("Error saving student:", error);
+    alert("Failed to save student. Please check console for details.");
   }
+}
+
+// ======== Event wiring ========
+document.addEventListener("DOMContentLoaded", async () => {
+  if (!requireAuth()) return;
+
+  // Tab switching
+  document.querySelectorAll(".tab-button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const tabId = btn.dataset.tab;
+      document
+        .querySelectorAll(".tab-button")
+        .forEach(b => b.classList.remove("active"));
+      document
+        .querySelectorAll(".tab-panel")
+        .forEach(panel => panel.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(tabId).classList.add("active");
+    });
+  });
+
+  // Add / Update Semester (append to list)
+  btnAddSemester.addEventListener("click", () => {
+    const name = semesterNameInput.value.trim();
+    const sgpa = sgpaInput.value.trim();
+    const subjects = subjectsInput.value.trim(); // e.g. "Sub1:A, Sub2:B+"
+
+    if (!name || !sgpa) {
+      alert("Semester name and SGPA are required.");
+      return;
+    }
+
+    const li = document.createElement("li");
+    li.dataset.subjects = subjects;
+    li.innerHTML = `
+      <span>${name} – SGPA: ${sgpa}</span>
+      <button>🗑</button>
+    `;
+    semesterList.appendChild(li);
+
+    semesterNameInput.value = "";
+    sgpaInput.value = "";
+    subjectsInput.value = "";
+
+    // Delete listener
+    li.querySelector("button").addEventListener("click", () => {
+      li.remove();
+    });
+  });
+
+  // Add / Update Skill
+  btnAddSkill.addEventListener("click", () => {
+    const name = skillNameInput.value.trim();
+    const level = skillLevelInput.value.trim();
+
+    if (!name || !level) {
+      alert("Skill name and proficiency are required.");
+      return;
+    }
+
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <span>${name}: ${level}%</span>
+      <button>🗑</button>
+    `;
+    skillsListAdmin.appendChild(li);
+
+    skillNameInput.value = "";
+    skillLevelInput.value = "";
+
+    li.querySelector("button").addEventListener("click", () => {
+      li.remove();
+    });
+  });
+
+  // Edit button in table
+  studentTableBody.addEventListener("click", e => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    const index = btn.dataset.index;
+    if (btn.dataset.action === "edit") {
+      openModal("edit", index);
+    }
+  });
+
+  // Verification buttons (approve / reject)
+  verificationTableBody.addEventListener("click", async e => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+
+    const index = parseInt(btn.dataset.index, 10);
+    const action = btn.dataset.verif;
+    const v = verifications[index];
+    if (!v) return;
+
+    try {
+      const newStatus = action === "approve" ? "Approved" : "Rejected";
+      await apiCall(`/certificates/${v._id}/verify`, {
+        method: "PUT",
+        body: JSON.stringify({ status: newStatus })
+      });
+      showToast(`Verification ${newStatus.toLowerCase()}`);
+      await loadVerificationsFromBackend();
+    } catch (error) {
+      console.error("Error updating verification:", error);
+      alert("Failed to update verification.");
+    }
+  });
+
+  // Save Student
+  btnSaveStudent.addEventListener("click", saveStudent);
+
+  // Delete Student
+  btnDeleteStudent.addEventListener("click", async () => {
+    if (editingIndex == null) return;
+    if (!confirm("Are you sure you want to delete this student?")) return;
+
+    const student = students[editingIndex];
+    try {
+      await apiCall(`/students/${student._id}`, { method: "DELETE" });
+      await loadStudentsFromBackend();
+      closeModal();
+      showToast("Student deleted");
+    } catch (error) {
+      console.error("Error deleting student:", error);
+      alert("Failed to delete student.");
+    }
+  });
+
+  // Preview report mapping
+  btnPreviewReport.addEventListener("click", () => {
+    alert(
+      "This student's data (personal, academic, skills, feedback) is stored in MongoDB and directly used by the Admin Reports and Student Reports pages."
+    );
+  });
+
+  // Close modal
+  closeModalBtn.addEventListener("click", closeModal);
+  studentModal.addEventListener("click", e => {
+    if (e.target === studentModal.querySelector(".modal-backdrop")) {
+      closeModal();
+    }
+  });
+
+  // Add student button
+  btnAddStudent.addEventListener("click", () => openModal("add"));
+
+  // Clear all (for safety, this only clears UI, not DB)
+  btnClearAll.addEventListener("click", () => {
+    if (
+      !confirm(
+        "This will clear the list on screen. It does NOT delete from database. Continue?"
+      )
+    )
+      return;
+    students = [];
+    renderStudents();
+  });
+
+  // Filters → reload from backend with query params
+  [searchInput, courseFilter, statusFilter].forEach(el => {
+    el.addEventListener("input", () => {
+      loadStudentsFromBackend();
+    });
+  });
+
+  // Tools: simple text feedback (you can later connect to real backup endpoints)
+  btnGenerateReport.addEventListener("click", () => {
+    if (!reportOutput) return;
+    reportOutput.textContent =
+      "Summary report: " +
+      `${students.length} students, avg CGPA ${avgCgpaEl.textContent}, pending verifications ${pendingVerificationsEl.textContent}.`;
+  });
+
+  btnBackup.addEventListener("click", () => {
+    if (!reportOutput) return;
+    reportOutput.textContent =
+      "Backup (demo): connect this button to a backend export endpoint if needed.";
+  });
+
+  btnRestore.addEventListener("click", () => {
+    if (!reportOutput) return;
+    reportOutput.textContent =
+      "Restore (demo): connect this button to a backend restore endpoint if needed.";
+  });
+
+  // Initial load
+  await loadStudentsFromBackend();
+  await loadVerificationsFromBackend();
 });
-
-// Add student button
-btnAddStudent.addEventListener("click", () => openModal("add"));
-
-// Clear all
-btnClearAll.addEventListener("click", () => {
-  if (!confirm("Clear all student records? This cannot be undone (in real system).")) return;
-  students = [];
-  renderStudents();
-});
-
-// Filters
-[searchInput, courseFilter, statusFilter].forEach(el => {
-  el.addEventListener("input", renderStudents);
-});
-
-// Tools: just text feedback for now
-btnGenerateReport.addEventListener("click", () => {
-  reportOutput.textContent =
-    "Summary report (frontend mock): " +
-    `${students.length} students, avg CGPA ${avgCgpaEl.textContent}, pending verifications ${pendingVerificationsEl.textContent}.`;
-});
-
-btnBackup.addEventListener("click", () => {
-  reportOutput.textContent =
-    "Backup triggered (frontend mock). Later this will call backend to export data.";
-});
-
-btnRestore.addEventListener("click", () => {
-  reportOutput.textContent =
-    "Restore triggered (frontend mock). Later this will call backend to restore from backup.";
-});
-
-// Initial render
-renderStudents();
-renderVerifications();

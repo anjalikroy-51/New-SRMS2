@@ -1,28 +1,75 @@
-// Load student profile from backend using AJAX
-async function loadStudentProfile() {
-  try {
-    if (!requireAuth()) return;
+// Dashboard - Load all data from backend
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!requireAuth()) return;
+  
+  await loadDashboardData();
+});
 
-    const student = await apiCall('/students/profile/me');
+// Load complete dashboard data
+async function loadDashboardData() {
+  try {
+    const data = await apiCall('/dashboard');
+    
+    // Load student profile
+    await loadStudentProfile(data.studentProfile);
+    
+    // Load class schedule
+    loadSchedule(data.schedule);
+    
+    // Load attendance
+    loadAttendance(data.attendance);
+    
+    // Load academic calendar
+    loadAcademicCalendar(data.calendarEvents);
+    
+    // Load upcoming events
+    loadEvents(data.upcomingEvents);
+    
+  } catch (error) {
+    console.error('Error loading dashboard data:', error);
+    // Fallback: try loading individual components
+    await loadStudentProfile();
+    await loadSchedule();
+    await loadAcademicEvents();
+    await loadEvents();
+  }
+}
+
+// Load student profile
+async function loadStudentProfile(profileData = null) {
+  try {
+    let student;
+    
+    if (profileData) {
+      student = profileData;
+    } else {
+      // Fallback: fetch from student profile endpoint
+      const studentProfile = await apiCall('/students/profile/me');
+      student = {
+        fullName: studentProfile.name || studentProfile.fullName,
+        studentId: studentProfile.studentId,
+        course: studentProfile.course
+      };
+    }
     
     // Update sidebar profile info
-    const sidebarName = document.querySelector('.profile-info p:first-child span');
-    const sidebarId = document.querySelector('.profile-info p:nth-child(2)');
-    const sidebarCourse = document.querySelector('.profile-info p:last-child');
-    
-    if (sidebarName) sidebarName.textContent = student.name || "N/A";
-    if (sidebarId) sidebarId.textContent = student.studentId || "N/A";
-    if (sidebarCourse) sidebarCourse.textContent = student.course || "N/A";
+    const profileInfo = document.querySelector('.profile-info');
+    if (profileInfo) {
+      const nameEl = profileInfo.querySelector('p:first-child span');
+      const idEl = profileInfo.querySelector('p:nth-child(2)');
+      const courseEl = profileInfo.querySelector('p:last-child');
+      
+      if (nameEl) nameEl.textContent = student.fullName || student.name || "N/A";
+      if (idEl) idEl.textContent = student.studentId || "N/A";
+      if (courseEl) courseEl.textContent = student.course || "N/A";
+    }
     
     // Update profile photo if available
-    if (student.photo) {
-      document.getElementById("studentPhoto").src = student.photo;
+    const studentPhoto = document.getElementById("studentPhoto");
+    if (studentPhoto && student.photo) {
+      studentPhoto.src = `http://localhost:3000${student.photo}`;
     }
     
-    // Update attendance percentage
-    if (student.attendancePercentage !== undefined) {
-      checkAttendance(student.attendancePercentage);
-    }
   } catch (error) {
     console.error('Error loading student profile:', error);
   }
@@ -48,75 +95,116 @@ document.getElementById("uploadPhoto")?.addEventListener("change", async functio
     const formData = new FormData();
     formData.append('photo', file);
     
-    const student = await apiCall('/students/profile/me');
-    await apiCall(`/students/${student._id}`, {
-      method: 'PUT',
-      body: JSON.stringify({ photo: reader.result })
-    });
+    await apiUpload('/settings/photo', formData, { method: 'POST' });
+    alert('Profile photo updated successfully!');
   } catch (error) {
     console.error('Error uploading photo:', error);
+    alert('Failed to upload photo. Please try again.');
   }
 });
 
-// Load and Download Class Schedule as CSV using AJAX
-async function loadSchedule() {
-  try {
-    const schedule = await apiCall('/schedule');
+// Load and display class schedule
+function loadSchedule(scheduleData) {
+  const scheduleTable = document.querySelector("#schedule tbody");
+  if (!scheduleTable) return;
+  
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+  const timeSlots = ['9-10 AM', '10-11 AM', '11-1 PM', '2-4 PM'];
+  
+  scheduleTable.innerHTML = '';
+  
+  days.forEach(day => {
+    const row = document.createElement('tr');
+    const dayCell = document.createElement('td');
+    dayCell.textContent = day;
+    row.appendChild(dayCell);
     
-    // Convert schedule to CSV format
-    const scheduleMap = {};
-    schedule.forEach(item => {
-      if (!scheduleMap[item.day]) {
-        scheduleMap[item.day] = {};
-      }
-      scheduleMap[item.day][item.timeSlot] = item.subject;
+    timeSlots.forEach(slot => {
+      const cell = document.createElement('td');
+      cell.textContent = scheduleData?.[day]?.[slot] || '-';
+      row.appendChild(cell);
     });
     
-    // Update download button
-    document.querySelector(".download-btn")?.addEventListener("click", () => {
-      let csv = "Day,9–10 AM,10–11 AM,11–1 PM,2–4 PM\n";
-      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-      const timeSlots = ['9-10 AM', '10-11 AM', '11-1 PM', '2-4 PM'];
-      
-      days.forEach(day => {
-        const row = [day];
-        timeSlots.forEach(slot => {
-          row.push(scheduleMap[day]?.[slot] || '-');
-        });
-        csv += row.join(',') + '\n';
+    scheduleTable.appendChild(row);
+  });
+  
+  // Update download button
+  document.querySelector(".download-btn")?.addEventListener("click", () => {
+    let csv = "Day,9–10 AM,10–11 AM,11–1 PM,2–4 PM\n";
+    
+    days.forEach(day => {
+      const row = [day];
+      timeSlots.forEach(slot => {
+        row.push(scheduleData?.[day]?.[slot] || '-');
       });
-      
-      const blob = new Blob([csv], { type: "text/csv" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "Weekly_Class_Schedule.csv";
-      link.click();
+      csv += row.join(',') + '\n';
     });
-  } catch (error) {
-    console.error('Error loading schedule:', error);
+    
+    const blob = new Blob([csv], { type: "text/csv" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "Weekly_Class_Schedule.csv";
+    link.click();
+  });
+}
+
+// Load attendance
+function loadAttendance(attendanceData) {
+  const attendanceSection = document.querySelector("#attendance");
+  if (!attendanceSection) return;
+  
+  const attendancePercent = attendanceData?.semesterAttendance || 0;
+  const lowSubjects = attendanceData?.lowAttendanceSubjects || [];
+  
+  // Update attendance percentage
+  const attendanceText = attendanceSection.querySelector('p');
+  if (attendanceText) {
+    attendanceText.innerHTML = `Semester Attendance: <strong>${attendancePercent}%</strong>`;
+  }
+  
+  // Update alert
+  const alertEl = attendanceSection.querySelector('.alert-text');
+  if (alertEl) {
+    if (attendancePercent < 75) {
+      alertEl.textContent = `⚠ Attendance Below 75%`;
+      alertEl.style.display = 'block';
+    } else if (lowSubjects.length > 0) {
+      alertEl.textContent = `⚠ Low attendance in ${lowSubjects.join(', ')}`;
+      alertEl.style.display = 'block';
+    } else {
+      alertEl.style.display = 'none';
+    }
   }
 }
 
-// Dynamic attendance alert
-function checkAttendance(att) {
-  const alertEl = document.querySelector(".alert-text");
-  if (alertEl && att < 75) {
-    alertEl.innerText = "⚠ Attendance Below 75%";
-  }
-}
-
-// === Academic Calendar Script with AJAX ===
+// Academic Calendar
 let academicEvents = {};
 let currentDate = new Date();
 
+function loadAcademicCalendar(calendarEvents = []) {
+  // Convert events to calendar format
+  academicEvents = {};
+  calendarEvents.forEach(event => {
+    const dateKey = new Date(event.date).toISOString().split('T')[0];
+    academicEvents[dateKey] = event.eventType.toLowerCase();
+  });
+  
+  renderCalendar();
+}
+
 async function loadAcademicEvents() {
   try {
-    const events = await apiCall('/events');
+    // Fallback: load from academic calendar endpoint
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
     
-    // Convert events to calendar format
+    const events = await apiCall(`/academic-calendar?start_date=${startOfMonth.toISOString()}&end_date=${endOfMonth.toISOString()}`);
+    
+    academicEvents = {};
     events.forEach(event => {
-      const dateKey = new Date(event.eventDate).toISOString().split('T')[0];
-      academicEvents[dateKey] = event.eventType;
+      const dateKey = new Date(event.date).toISOString().split('T')[0];
+      academicEvents[dateKey] = event.eventType.toLowerCase();
     });
     
     renderCalendar();
@@ -176,54 +264,59 @@ function renderCalendar() {
 document.getElementById("prevMonth")?.addEventListener("click", () => {
   currentDate.setMonth(currentDate.getMonth() - 1);
   renderCalendar();
+  // Reload events for new month
+  loadAcademicEvents();
 });
 
 document.getElementById("nextMonth")?.addEventListener("click", () => {
   currentDate.setMonth(currentDate.getMonth() + 1);
   renderCalendar();
+  // Reload events for new month
+  loadAcademicEvents();
 });
 
-// === Load Upcoming Events using AJAX ===
-async function loadEvents() {
+// Load upcoming events
+function loadEvents(eventsData = []) {
+  const eventContainer = document.getElementById("eventList");
+  if (!eventContainer) return;
+  
+  eventContainer.innerHTML = "";
+
+  if (eventsData.length === 0) {
+    eventContainer.innerHTML = '<p style="text-align: center; color: #666;">No upcoming events</p>';
+    return;
+  }
+
+  eventsData.forEach(ev => {
+    const item = document.createElement("div");
+    item.className = "event-item " + ev.category.toLowerCase().replace(' ', '-');
+
+    item.innerHTML = `
+      <div class="event-date">${new Date(ev.date).toLocaleDateString()}</div>
+      <div class="event-title">${ev.title}</div>
+      <div class="event-type">${ev.category.toUpperCase()}</div>
+    `;
+
+    item.onclick = () => {
+      alert(`${ev.title}\n📅 ${new Date(ev.date).toLocaleDateString()}\nCategory: ${ev.category}\n\n${ev.description || 'No description available'}`);
+    };
+
+    eventContainer.appendChild(item);
+  });
+}
+
+async function loadEventsFallback() {
   try {
     const events = await apiCall('/events/upcoming');
-    
-    function renderEvents(upcomingEvents) {
-      const eventContainer = document.getElementById("eventList");
-      if (!eventContainer) return;
-      
-      eventContainer.innerHTML = "";
-
-      upcomingEvents.forEach(ev => {
-        const item = document.createElement("div");
-        item.className = "event-item " + ev.eventType;
-
-        item.innerHTML = `
-          <div class="event-date">${new Date(ev.eventDate).toLocaleDateString()}</div>
-          <div class="event-title">${ev.title}</div>
-          <div class="event-type">${ev.eventType.toUpperCase()}</div>
-        `;
-
-        item.onclick = () => {
-          alert(`${ev.title}\n📅 ${new Date(ev.eventDate).toLocaleDateString()}\nCategory: ${ev.eventType}`);
-        };
-
-        eventContainer.appendChild(item);
-      });
-    }
-    
-    renderEvents(events);
+    loadEvents(events);
   } catch (error) {
     console.error('Error loading events:', error);
   }
 }
 
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', async () => {
-  if (!requireAuth()) return;
-  
-  await loadStudentProfile();
-  await loadSchedule();
-  await loadAcademicEvents();
-  await loadEvents();
+// Logout button
+document.querySelector(".logout")?.addEventListener("click", () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.href = 'Login.html';
 });

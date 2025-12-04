@@ -1,7 +1,35 @@
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const Student = require('../models/Student');
+const StudentProfile = require('../models/StudentProfile');
 const User = require('../models/User');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
+
+// Configure multer for document uploads
+const documentStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = 'uploads/documents';
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'doc-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const uploadDocuments = multer({
+  storage: documentStorage,
+  limits: { fileSize: 5 * 1024 * 1024 }
+}).fields([
+  { name: 'idCard', maxCount: 1 },
+  { name: 'bonafide', maxCount: 1 },
+  { name: 'feeReceipt', maxCount: 1 }
+]);
 
 const router = express.Router();
 
@@ -85,6 +113,28 @@ router.get('/:id', authenticateToken, async (req, res) => {
 // Get current student's profile
 router.get('/profile/me', authenticateToken, async (req, res) => {
   try {
+    // Try to get from StudentProfile first
+    let studentProfile = await StudentProfile.findOne({ userId: req.user._id })
+      .populate('userId', 'username email');
+
+    if (studentProfile) {
+      // Return in format expected by frontend
+      return res.json({
+        _id: studentProfile._id,
+        studentId: studentProfile.studentId,
+        name: studentProfile.fullName,
+        fullName: studentProfile.fullName,
+        course: studentProfile.course,
+        email: studentProfile.email || studentProfile.userId?.email,
+        photo: studentProfile.idCard || '',
+        cgpa: studentProfile.cgpa,
+        backlogs: studentProfile.backlogs,
+        status: studentProfile.studentStatus,
+        attendancePercentage: 0 // Will be fetched from attendance collection
+      });
+    }
+
+    // Fallback to old Student model
     const student = await Student.findOne({ user: req.user._id })
       .populate('user', 'username email');
 
@@ -95,6 +145,83 @@ router.get('/profile/me', authenticateToken, async (req, res) => {
     res.json(student);
   } catch (error) {
     console.error('Error fetching student profile:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get full student profile details
+router.get('/profile/full', authenticateToken, async (req, res) => {
+  try {
+    const studentProfile = await StudentProfile.findOne({ userId: req.user._id });
+    
+    if (!studentProfile) {
+      return res.status(404).json({ error: 'Student profile not found' });
+    }
+
+    res.json(studentProfile);
+  } catch (error) {
+    console.error('Error fetching full profile:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Update student profile
+router.put('/profile/update', authenticateToken, async (req, res) => {
+  try {
+    const updates = req.body;
+    
+    const studentProfile = await StudentProfile.findOne({ userId: req.user._id });
+    
+    if (!studentProfile) {
+      return res.status(404).json({ error: 'Student profile not found' });
+    }
+
+    // Update all fields
+    Object.keys(updates).forEach(key => {
+      if (updates[key] !== null && updates[key] !== undefined && updates[key] !== '') {
+        studentProfile[key] = updates[key];
+      }
+    });
+
+    await studentProfile.save();
+
+    res.json({
+      message: 'Profile updated successfully',
+      profile: studentProfile
+    });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Upload profile documents
+router.post('/profile/documents', authenticateToken, uploadDocuments, async (req, res) => {
+  try {
+    const studentProfile = await StudentProfile.findOne({ userId: req.user._id });
+    
+    if (!studentProfile) {
+      return res.status(404).json({ error: 'Student profile not found' });
+    }
+
+    if (req.files.idCard) {
+      studentProfile.idCard = `/uploads/documents/${req.files.idCard[0].filename}`;
+    }
+    if (req.files.bonafide) {
+      studentProfile.bonafideCertificate = `/uploads/documents/${req.files.bonafide[0].filename}`;
+    }
+    if (req.files.feeReceipt) {
+      studentProfile.feeReceipt = `/uploads/documents/${req.files.feeReceipt[0].filename}`;
+    }
+
+    await studentProfile.save();
+
+    res.json({
+      message: 'Documents uploaded successfully',
+      profile: studentProfile
+    });
+  } catch (error) {
+    console.error('Error uploading documents:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

@@ -11,6 +11,11 @@ const certificateRoutes = require('./routes/certificates');
 const eventRoutes = require('./routes/events');
 const scheduleRoutes = require('./routes/schedule');
 const attendanceRoutes = require('./routes/attendance');
+const reportsRoutes = require('./routes/reports');
+const settingsRoutes = require('./routes/settings');
+const dashboardRoutes = require('./routes/dashboard');
+const academicCalendarRoutes = require('./routes/academicCalendar');
+const achievementsRoutes = require('./routes/achievements');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -34,6 +39,11 @@ app.use('/api/certificates', certificateRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/schedule', scheduleRoutes);
 app.use('/api/attendance', attendanceRoutes);
+app.use('/api/reports', reportsRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/academic-calendar', academicCalendarRoutes);
+app.use('/api/achievements', achievementsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

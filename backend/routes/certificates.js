@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const Certificate = require('../models/Certificate');
 const Student = require('../models/Student');
+const StudentProfile = require('../models/StudentProfile');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
@@ -55,14 +56,23 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
 // Get certificates for current student
 router.get('/me', authenticateToken, async (req, res) => {
   try {
+    // Try StudentProfile first
+    let studentProfile = await StudentProfile.findOne({ userId: req.user._id });
+    
+    if (studentProfile) {
+      const certificates = await Certificate.find({ studentId: studentProfile._id })
+        .sort({ uploadedAt: -1 });
+      return res.json(certificates);
+    }
+    
+    // Fallback to old Student model
     const student = await Student.findOne({ user: req.user._id });
     if (!student) {
       return res.status(404).json({ error: 'Student not found' });
     }
 
     const certificates = await Certificate.find({ student: student._id })
-      .populate('verification.reviewedBy', 'username')
-      .sort({ 'verification.submittedOn': -1 });
+      .sort({ createdAt: -1 });
 
     res.json(certificates);
   } catch (error) {
@@ -74,30 +84,53 @@ router.get('/me', authenticateToken, async (req, res) => {
 // Create certificate request
 router.post('/', authenticateToken, upload.single('certificate'), async (req, res) => {
   try {
-    const { title, issuer, issueDate } = req.body;
+    const { title, certificateName, issuer, issueDate, category } = req.body;
 
-    if (!title) {
-      return res.status(400).json({ error: 'Title is required' });
+    if (!title && !certificateName) {
+      return res.status(400).json({ error: 'Certificate name is required' });
     }
 
-    const student = await Student.findOne({ user: req.user._id });
-    if (!student) {
-      return res.status(404).json({ error: 'Student not found' });
+    // Try StudentProfile first
+    let studentProfile = await StudentProfile.findOne({ userId: req.user._id });
+    
+    if (!studentProfile) {
+      // Fallback to old Student model
+      const student = await Student.findOne({ user: req.user._id });
+      if (!student) {
+        return res.status(404).json({ error: 'Student not found' });
+      }
+      
+      const certificate = new Certificate({
+        studentId: student._id,
+        certificateName: certificateName || title,
+        issuer: issuer || '',
+        issueDate: issueDate ? new Date(issueDate) : new Date(),
+        category: category || '',
+        fileUrl: req.file ? `/uploads/certificates/${req.file.filename}` : '',
+        status: 'Pending'
+      });
+      
+      await certificate.save();
+      return res.status(201).json({
+        message: 'Certificate uploaded successfully',
+        certificate
+      });
     }
 
     const certificate = new Certificate({
-      student: student._id,
-      title,
+      studentId: studentProfile._id,
+      certificateName: certificateName || title,
       issuer: issuer || '',
-      issueDate: issueDate || new Date(),
-      certificateUrl: req.file ? `/uploads/certificates/${req.file.filename}` : ''
+      issueDate: issueDate ? new Date(issueDate) : new Date(),
+      category: category || '',
+      fileUrl: req.file ? `/uploads/certificates/${req.file.filename}` : '',
+      status: 'Pending'
     });
 
     await certificate.save();
-    await certificate.populate('student', 'studentId name');
 
     res.status(201).json({
-      message: 'Certificate request submitted',
+      message: 'Certificate uploaded successfully',
       certificate
     });
   } catch (error) {

@@ -12,18 +12,18 @@ router.get('/', authenticateToken, async (req, res) => {
     let query = {};
 
     if (type) {
-      query.eventType = type;
+      query.category = type;
     }
 
     if (start_date) {
-      query.eventDate = { ...query.eventDate, $gte: new Date(start_date) };
+      query.date = { ...query.date, $gte: new Date(start_date) };
     }
 
     if (end_date) {
-      query.eventDate = { ...query.eventDate, $lte: new Date(end_date) };
+      query.date = { ...query.date, $lte: new Date(end_date) };
     }
 
-    const events = await Event.find(query).sort({ eventDate: 1 });
+    const events = await Event.find(query).sort({ date: 1 });
 
     res.json(events);
   } catch (error) {
@@ -36,10 +36,11 @@ router.get('/', authenticateToken, async (req, res) => {
 router.get('/upcoming', authenticateToken, async (req, res) => {
   try {
     const events = await Event.find({
-      eventDate: { $gte: new Date() }
+      date: { $gte: new Date() }
     })
-      .sort({ eventDate: 1 })
-      .limit(10);
+      .sort({ date: 1 })
+      .limit(10)
+      .populate('createdBy', 'username');
 
     res.json(events);
   } catch (error) {
@@ -53,15 +54,16 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { title, description, eventDate, eventType } = req.body;
 
-    if (!title || !eventDate || !eventType) {
-      return res.status(400).json({ error: 'Title, eventDate, and eventType are required' });
+    if (!title || !date || !category) {
+      return res.status(400).json({ error: 'Title, date, and category are required' });
     }
 
     const event = new Event({
       title,
       description: description || '',
-      eventDate: new Date(eventDate),
-      eventType
+      date: new Date(date),
+      category,
+      createdBy: req.user._id
     });
 
     await event.save();
@@ -82,8 +84,8 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
 
-    if (updates.eventDate) {
-      updates.eventDate = new Date(updates.eventDate);
+    if (updates.date) {
+      updates.date = new Date(updates.date);
     }
 
     const event = await Event.findByIdAndUpdate(
